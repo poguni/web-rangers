@@ -7,12 +7,14 @@ const feedback = (page: Page) => page.locator('[role="status"] .toast');
 const noPageScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollHeight <= document.documentElement.clientHeight);
 
-test.describe("화면이 스크롤 없이 들어가요 (DESIGN 12장 6번)", () => {
+test.describe("화면이 스크롤 없이 들어가고, 교과서 쪽수가 없어요", () => {
   for (const route of ["", "sort", "tutorial", "build"]) {
     test(`#/${route}`, async ({ page }) => {
       await page.goto(`/#/${route}`);
       await expect(page.locator(".screen")).toBeVisible();
       expect(await noPageScroll(page)).toBe(true);
+      // 학교마다 교과서가 달라 화면에 교과서 쪽수를 쓰지 않음
+      expect(await page.locator("body").innerText()).not.toMatch(/\d+\s*(~\s*\d+\s*)?쪽/);
     });
   }
 });

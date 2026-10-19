@@ -54,11 +54,7 @@ export function TutorialScreen({ go }: { go: (r: Route) => void }) {
   return (
     <div className="screen">
       <AppBar
-        crumb={
-          <>
-            숲 › 먹이사슬 배우기 <span className="tb-tag">교과서 49쪽</span>
-          </>
-        }
+        crumb="숲 › 먹이사슬 배우기"
         onExit={() => go("")}
       />
       <main className="body">

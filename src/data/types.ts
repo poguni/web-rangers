@@ -23,7 +23,7 @@ export interface Species {
   growth?: number; // 생산자 성장률 r_i (없으면 자동 보정 값 사용)
   tags?: ("endangered" | "invasive")[];
   added?: boolean; // 교과서에 없지만 먹이그물에 꼭 필요해 추가한 생물
-  sources: string[]; // 관계·사실의 출처 (예: "교과서 49쪽")
+  sources: string[]; // 관계·사실의 출처 (예: "교과서 49쪽"). 검토용 기록이며 화면에는 표시하지 않음
   review?: Review[]; // PRD 5.6 검토 기록
 }
 
@@ -48,6 +48,6 @@ export interface EventCard {
   duration?: number; // 지속 기간(년)
   invader?: Species; // 외래종 유입 시 새 생물
   image: string; // "img/event/event-forest-frog-gone"
-  textbook?: string; // 교과서 연결 (예: "48쪽 정리 2")
+  textbook?: string; // 개발·검토용 교과서 연결 기록(예: "48쪽"). 학교마다 교과서가 달라 화면에는 표시하지 않음
   realCase?: string; // "실제로 있었던 일" 설명
 }

@@ -80,7 +80,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
       setLinked(next);
       setFresh(key);
       if (hint?.from === from && hint.to === to) setHint(null);
-      if (next.size === TOTAL) setToast({ kind: "ok", title: `화살표 ${TOTAL}개를 모두 찾았어요!`, text: "교과서 49쪽 먹이그물과 똑같아요." });
+      if (next.size === TOTAL) setToast({ kind: "ok", title: `화살표 ${TOTAL}개를 모두 찾았어요!`, text: "숲의 먹고 먹히는 관계를 모두 이었어요." });
       else setToast({ kind: "ok", title: `맞아요! ${a.name} → ${b.name}`, text: `${josa(b.name, "은/는")} ${josa(a.name, "을/를")} 먹어요.` });
       if (next.size >= GOAL && !doneShown.current) {
         doneShown.current = true;
@@ -150,11 +150,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
   return (
     <div className="screen">
       <AppBar
-        crumb={
-          <>
-            숲 › 먹이그물 만들기 <span className="tb-tag">교과서 49쪽</span>
-          </>
-        }
+        crumb="숲 › 먹이그물 만들기"
         onExit={() => go("")}
       >
         <span className="pill gold" aria-label={`이번 판 별 ${stars}개`}>

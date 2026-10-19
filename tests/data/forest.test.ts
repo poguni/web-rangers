@@ -1,6 +1,7 @@
 // PRD 6.6 데이터 검증·어휘 검사, 5.4 교과서 49쪽 대조표 일치
 import { describe, expect, it } from "vitest";
 import { forestChain, forestEvents, forestSpecies } from "../../src/data/forest";
+import { sortCards } from "../../src/data/sort";
 import { BANNED_WORDS } from "../../src/data/words";
 import { calibrate } from "../../src/engine/calibrate";
 
@@ -76,5 +77,14 @@ describe("숲 데이터 (교과서 49쪽)", () => {
       ...forestEvents.flatMap((e) => [e.title, e.story, e.realCase ?? ""]),
     ];
     for (const t of texts) for (const w of BANNED_WORDS) expect(t.includes(w), `"${t}"에 "${w}"`).toBe(false);
+  });
+
+  it("화면 문장에 교과서 쪽수가 없어요(학교마다 교과서가 다름)", () => {
+    const texts = [
+      ...forestSpecies.flatMap((s) => [s.name, s.habitat, s.fact]),
+      ...forestEvents.flatMap((e) => [e.title, e.story, e.realCase ?? ""]),
+      ...sortCards.flatMap((c) => [c.name, c.how]),
+    ];
+    for (const t of texts) expect(t, t).not.toMatch(/\d+\s*쪽/);
   });
 });

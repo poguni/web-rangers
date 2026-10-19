@@ -46,7 +46,7 @@ export function judgeLink(species: Species[], linked: Set<string>, from: string,
   return {
     kind: "wrong",
     title: "다시 생각해 봐요!",
-    text: `${josa(b.name, "은/는")} ${josa(a.name, "을/를")} 먹지 않아요. 교과서 49쪽 그림을 다시 살펴봐요.`,
+    text: `${josa(b.name, "은/는")} ${josa(a.name, "을/를")} 먹지 않아요. 누가 누구를 먹는지 다시 생각해 봐요.`,
   };
 }
 

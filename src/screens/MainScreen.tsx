@@ -31,9 +31,7 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
               🌰🐿️🐦🐍🦅
             </div>
             <div className="info">
-              <h3>
-                숲 <span className="tb-tag">교과서 49쪽</span>
-              </h3>
+              <h3>숲</h3>
               <div className="sub">도토리·다람쥐·직박구리·매가 사는 곳</div>
             </div>
           </button>
@@ -42,9 +40,7 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
               <span className="tag">🔒 곧 열려요</span>🌾🐌🐟🦆🪶
             </div>
             <div className="info">
-              <h3>
-                강 <span className="tb-tag">교과서 44쪽</span>
-              </h3>
+              <h3>강</h3>
               <div className="sub">붕어마름·다슬기·오리·왜가리가 사는 곳</div>
             </div>
           </button>
@@ -53,9 +49,7 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
               <span className="tag">🔒 곧 열려요</span>🌿🪼🐟🐢🐬
             </div>
             <div className="info">
-              <h3>
-                바다 <span className="tb-tag">교과서 45쪽</span>
-              </h3>
+              <h3>바다</h3>
               <div className="sub">미역·해파리·고등어·바다거북이 사는 곳</div>
             </div>
           </button>

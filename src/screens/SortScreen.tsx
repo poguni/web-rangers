@@ -50,11 +50,7 @@ export function SortScreen({ go }: { go: (r: Route) => void }) {
   return (
     <div className="screen">
       <AppBar
-        crumb={
-          <>
-            분류 놀이 <span className="tb-tag">교과서 46~47쪽</span>
-          </>
-        }
+        crumb="분류 놀이"
         onExit={() => go("")}
       >
         <span className="pill navy">남은 카드 {remaining.length}장</span>
