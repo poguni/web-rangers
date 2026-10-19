@@ -1,0 +1,50 @@
+/* DESIGN.md 4장 디자인 토큰. 컴포넌트에서는 이 변수만 씀 */
+:root {
+  /* 바탕·글자: 탐험 수첩 종이 */
+  --paper: #fbf6ea;
+  --paper-2: #f3ebd7;
+  --card: #fffdf7;
+  --ink: #2b2a26;
+  --ink-2: #6b6559;
+  --line: #e2d6bc;
+
+  /* 브랜드 */
+  --navy: #24466b;
+  --navy-2: #e3ecf5;
+  --navy-dark: #142c47;
+  --gold: #e3a81b;
+  --gold-2: #fff3d1;
+  --gold-dark: #a87a06;
+  --gold-ink: #8a5e00;
+
+  /* 생물 역할 (교과서 4학년: 생산자·소비자·분해자) */
+  --producer: #3f9a4e;
+  --producer-2: #e3f1de;
+  --consumer: #e07b39;
+  --consumer-2: #fbe7d9;
+  --decomposer: #8b6b4e;
+  --decomposer-2: #f1e6db;
+
+  /* 변화 */
+  --up: #1f8a70;
+  --up-2: #ddf2ea;
+  --down: #d1495b;
+  --down-2: #fbe3e6;
+  --same: #8c8577;
+  --gone: #6b6559;
+
+  /* 테마 */
+  --forest: #2f6b3b;
+  --river: #3f86a0;
+  --sea: #1f5f8b;
+
+  /* 모양·그림자 */
+  --r-lg: 20px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --shadow: 0 2px 0 rgba(43, 42, 38, 0.08), 0 8px 24px rgba(43, 42, 38, 0.08);
+
+  /* 글꼴 */
+  --f-title: "Jua", "Noto Sans KR", sans-serif;
+  --f-body: "Noto Sans KR", "Malgun Gothic", sans-serif;
+}

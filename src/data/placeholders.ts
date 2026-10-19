@@ -1,0 +1,23 @@
+// 그림이 준비되기 전 쓰는 자리 표시 이모지(그림 경로 → 이모지). 실제 그림은 design/Image-Prompts.md로 생성
+export const PLACEHOLDER: Record<string, string> = {
+  "img/forest/forest-grass": "🌿",
+  "img/forest/forest-clover": "☘️",
+  "img/forest/forest-cornus": "🍒",
+  "img/forest/forest-acorn": "🌰",
+  "img/forest/forest-grasshopper": "🦗",
+  "img/forest/forest-caterpillar": "🐛",
+  "img/forest/forest-rabbit": "🐇",
+  "img/forest/forest-squirrel": "🐿️",
+  "img/forest/forest-frog": "🐸",
+  "img/forest/forest-bulbul": "🐦",
+  "img/forest/forest-duck": "🦆",
+  "img/forest/forest-snake": "🐍",
+  "img/forest/forest-weasel": "🦦",
+  "img/forest/forest-falcon": "🦅",
+  "img/forest/forest-mushroom": "🍄",
+  "img/forest/forest-mold": "🧫",
+  "img/sort/sort-woodsorrel": "🍀",
+  "img/sort/sort-fleabane": "🌼",
+  "img/sort/sort-tit": "🐦‍⬛",
+  "img/sea/sea-coral": "🪸",
+};

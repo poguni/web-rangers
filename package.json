@@ -5,14 +5,29 @@
   "description": "먹이그물 탐험대(Web Rangers): 초등 4학년 2학기 과학 '생물과 환경' 먹이그물 탐구 앱",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "sim": "tsx scripts/sim-table.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
+    "vite": "^8.3.4",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/jua": "^5.3.0",
+    "@fontsource/noto-sans-kr": "^5.3.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

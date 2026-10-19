@@ -106,8 +106,29 @@ export const forestSpecies: Species[] = [
   }),
 ];
 
-// 먹이사슬과 먹이그물 비교(숲 스테이지 5, 자유 실험실 F7-4): 교과서 49쪽 먹이사슬 예시
+// 먹이사슬과 먹이그물 비교(숲 스테이지 5, 자유 실험실 F7-4): 교과서 49쪽 먹이사슬(교사 확인)
 export const forestChain = ["forest.grass", "forest.grasshopper", "forest.frog"];
+
+// "정리하기" 배치: 먹이그물 판(viewBox 960×530)의 고정 좌표. 선이 생물 그림을 지나가지 않게 맞춤(DESIGN 6장, 시안 N)
+// 먹히는 생물은 아래, 먹는 생물은 위로 5층(y = 470 / 365 / 260 / 160 / 60), 분해자는 오른쪽 아래 상자
+export const forestLayout: Record<string, { x: number; y: number }> = {
+  "forest.grass": { x: 150, y: 470 },
+  "forest.clover": { x: 380, y: 470 },
+  "forest.cornus": { x: 560, y: 470 },
+  "forest.acorn": { x: 720, y: 470 },
+  "forest.grasshopper": { x: 170, y: 365 },
+  "forest.rabbit": { x: 330, y: 365 },
+  "forest.caterpillar": { x: 500, y: 365 },
+  "forest.squirrel": { x: 700, y: 365 },
+  "forest.frog": { x: 330, y: 260 },
+  "forest.bulbul": { x: 590, y: 260 },
+  "forest.duck": { x: 50, y: 160 },
+  "forest.snake": { x: 410, y: 160 },
+  "forest.weasel": { x: 200, y: 60 },
+  "forest.falcon": { x: 600, y: 60 },
+  "forest.mushroom": { x: 845, y: 470 },
+  "forest.mold": { x: 922, y: 470 },
+};
 
 export const forestEvents: EventCard[] = [
   {
