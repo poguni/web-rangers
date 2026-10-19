@@ -50,4 +50,21 @@ export interface EventCard {
   image: string; // "img/event/event-forest-frog-gone"
   textbook?: string; // 개발·검토용 교과서 연결 기록(예: "48쪽"). 학교마다 교과서가 달라 화면에는 표시하지 않음
   realCase?: string; // "실제로 있었던 일" 설명
+  because: string; // 설명 문장용: "가뭄이 들어" → "가뭄이 들어 풀이 줄었어요."
+}
+
+// PRD 5.3 관리인 행동 카드
+export type ActionType =
+  | "reintroduce" // 되살리기: 사라진 대상을 30으로
+  | "protect" // 보호 구역: 대상이 4년 동안 덜 죽음
+  | "water" // 물 대 주기: 비생물 요소(가뭄) 효과를 바로 끝냄
+  | "remove-invasive" // 외래종 잡기(강 테마, M5)
+  | "clean"; // 강물·바다 깨끗하게(강·바다 테마, M5)
+
+export interface ActionCard {
+  type: ActionType;
+  title: string; // "개구리 되살리기"
+  text: string; // 효과 한 줄
+  image: string; // "img/action/action-reintroduce"
+  targets: string[]; // 생물 id 또는 "role:decomposer"
 }

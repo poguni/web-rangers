@@ -4,14 +4,14 @@ import type { Model } from "./calibrate";
 import type { SimState } from "./simulate";
 
 /** "role:producer" 같은 대상을 생물 번호 목록으로 바꿈 */
-function resolveTargets(model: Model, targets: string[]): number[] {
+export function resolveTargets(model: Model, targets: string[]): number[] {
   return targets.flatMap((t) => {
     if (t.startsWith("role:")) {
       const role = t.slice(5);
       return model.species.flatMap((s, i) => (s.role === role ? [i] : []));
     }
     const i = model.index[t];
-    if (i === undefined) throw new Error(`사건 대상이 이 먹이그물에 없어요: ${t}`);
+    if (i === undefined) throw new Error(`대상이 이 먹이그물에 없어요: ${t}`);
     return [i];
   });
 }

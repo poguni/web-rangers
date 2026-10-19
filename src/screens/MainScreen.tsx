@@ -6,8 +6,8 @@ const MODES: { route?: Route; icon: string; bg: string; title: string; desc: str
   { route: "sort", icon: "🧺", bg: "var(--producer-2)", title: "분류 놀이", desc: "생산자·소비자·분해자 나누기" },
   { route: "tutorial", icon: "🔗", bg: "var(--consumer-2)", title: "먹이사슬 배우기", desc: "카드 3장을 화살표로 이어요" },
   { route: "build", icon: "🕸️", bg: "var(--producer-2)", title: "먹이그물 만들기", desc: "카드를 화살표로 이어요" },
-  { icon: "🔎", bg: "var(--navy-2)", title: "사건 탐구", desc: "곧 열려요" },
-  { icon: "🧪", bg: "var(--gold-2)", title: "자유 실험실", desc: "곧 열려요" },
+  { route: "stages", icon: "🔎", bg: "var(--navy-2)", title: "사건 탐구", desc: "예측하고 관찰해요" },
+  { route: "lab", icon: "🧪", bg: "var(--gold-2)", title: "자유 실험실", desc: "마음대로 없애고 늘려 봐요" },
 ];
 
 export function MainScreen({ go }: { go: (r: Route) => void }) {

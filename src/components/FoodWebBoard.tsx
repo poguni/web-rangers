@@ -1,4 +1,5 @@
 // DESIGN 7.1 FoodWebCanvas + 7.2 화살표 잇기 입력(끌어서 잇기·눌러서 잇기를 Pointer Events 하나로)
+// onLink가 있으면 잇기 판, onNodeTap만 있으면 생물 고르기 판(자유 실험실), 둘 다 없으면 보기 전용(관찰)
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type RefObject } from "react";
 import { BOARD, type Point } from "../game/build";
 import { PLACEHOLDER } from "../data/placeholders";
@@ -11,13 +12,14 @@ export interface BoardNode {
   role: Role;
   x: number;
   y: number;
-  state?: "ghost" | "shake";
+  state?: "ghost" | "shake" | "gone" | "hot" | "pick";
+  badge?: { text: string; kind: "up" | "down" | "gone" }; // 오른쪽 위 변화 배지 "▲136"
 }
 
 export interface BoardEdge {
   from: string;
   to: string;
-  kind: "ok" | "bad" | "hint" | "decomp";
+  kind: "ok" | "bad" | "hint" | "decomp" | "plain" | "dim" | "flow";
   fresh?: boolean; // 방금 이은 화살표(그려지는 효과)
 }
 
@@ -29,7 +31,8 @@ const ROLE_COLOR: Record<Role, string> = {
   consumer: "var(--consumer)",
   decomposer: "var(--decomposer)",
 };
-const MARKERS = { plain: "#8D8574", ok: "#3F9A4E", bad: "#D1495B", rubber: "#24466B", decomp: "#8B6B4E" };
+const MARKERS = { plain: "#8D8574", ok: "#3F9A4E", bad: "#D1495B", rubber: "#24466B", decomp: "#8B6B4E", dim: "#DDD4C2", flow: "#E3A81B" };
+const BADGE_COLOR = { up: "#1F8A70", down: "#D1495B", gone: "#6B6559" };
 
 /** 화면 좌표 → 판 좌표(viewBox) */
 export function clientToBoard(svg: SVGSVGElement, x: number, y: number): Point {
@@ -42,13 +45,14 @@ interface Props {
   edges: BoardEdge[];
   label: string;
   svgRef: RefObject<SVGSVGElement | null>;
-  onLink: (from: string, to: string) => void;
+  onLink?: (from: string, to: string) => void;
+  onNodeTap?: (id: string) => void;
   /** 빈 곳을 눌렀을 때(카드 놓기) */
   onBoardTap?: (p: Point) => void;
   decomposerBox?: boolean;
 }
 
-export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, decomposerBox }: Props) {
+export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, onBoardTap, decomposerBox }: Props) {
   const uid = useId();
   const [pick, setPick] = useState<string | null>(null);
   const [rubber, setRubber] = useState<{ from: string; x: number; y: number } | null>(null);
@@ -56,9 +60,12 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
   const dropping = useRef(false); // 끌어서 잇기를 끝낸 pointerup 바로 뒤에 오는 click 하나만 무시
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const toBoard = (x: number, y: number) => clientToBoard(svgRef.current!, x, y);
+  const interactive = Boolean(onLink || onNodeTap);
 
   function tapNode(id: string) {
     if (dropping.current) return;
+    if (onNodeTap) return onNodeTap(id);
+    if (!onLink) return;
     if (pick === null) setPick(id);
     else if (pick === id) setPick(null);
     else {
@@ -68,7 +75,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
   }
 
   function onNodePointerDown(id: string, e: PointerEvent) {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || !onLink) return;
     down.current = { from: id, x: e.clientX, y: e.clientY, moved: false };
   }
 
@@ -107,7 +114,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
         bestDist = dist;
       }
     }
-    if (best) onLink(d.from, best.id);
+    if (best) onLink?.(d.from, best.id);
   }
 
   function onBackgroundClick(e: MouseEvent<SVGSVGElement>) {
@@ -124,7 +131,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
   };
 
   const okList = edges
-    .filter((e) => e.kind === "ok")
+    .filter((e) => e.kind === "ok" || e.kind === "plain" || e.kind === "flow")
     .map((e) => `${byId.get(e.from)?.name} → ${byId.get(e.to)?.name}`)
     .join(", ");
 
@@ -143,7 +150,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
       }}
       onClick={onBackgroundClick}
     >
-      <desc>{okList ? `이은 화살표: ${okList}` : "아직 이은 화살표가 없어요."}</desc>
+      <desc>{okList ? `먹이 관계 화살표: ${okList}` : "아직 이은 화살표가 없어요."}</desc>
       <defs>
         {Object.entries(MARKERS).map(([k, color]) => (
           <marker key={k} id={`${uid}-${k}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -179,17 +186,17 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
           style={{ transform: `translate(${n.x}px, ${n.y}px)` }}
         >
           <g
-            className={`node${pick === n.id ? " pick" : ""}${n.state ? ` ${n.state}` : ""}`}
-            role="button"
-            tabIndex={n.state === "ghost" ? -1 : 0}
-            aria-label={pick === n.id ? `${n.name} (골랐어요)` : n.name}
+            className={`node${pick === n.id ? " pick" : ""}${n.state ? ` ${n.state}` : ""}${interactive ? "" : " static"}`}
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive && n.state !== "ghost" ? 0 : undefined}
+            aria-label={interactive ? (pick === n.id || n.state === "pick" ? `${n.name} (골랐어요)` : n.name) : undefined}
             data-node={n.id}
             onPointerDown={(e) => onNodePointerDown(n.id, e)}
             onClick={(e) => {
               e.stopPropagation();
               tapNode(n.id);
             }}
-            onKeyDown={onNodeKey(n.id)}
+            onKeyDown={interactive ? onNodeKey(n.id) : undefined}
           >
             <g>
               <circle className="hit" r={R + 12} />
@@ -201,6 +208,14 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onBoardTap, 
               <text className="nm" y={50}>
                 {n.name}
               </text>
+              {n.badge && (
+                <g transform="translate(20,-30)" aria-hidden="true">
+                  <rect x={-2} y={-12} width={[...n.badge.text].length * 9 + 10} height={22} rx={7} fill={BADGE_COLOR[n.badge.kind]} />
+                  <text x={4} y={4} className="badge">
+                    {n.badge.text}
+                  </text>
+                </g>
+              )}
             </g>
           </g>
         </g>

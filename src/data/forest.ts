@@ -140,6 +140,7 @@ export const forestEvents: EventCard[] = [
     targets: ["forest.frog"],
     amount: 0,
     image: "img/event/event-forest-frog-gone",
+    because: "개구리가 사라져",
     textbook: "48쪽",
   },
   {
@@ -151,6 +152,7 @@ export const forestEvents: EventCard[] = [
     targets: ["forest.bulbul"],
     amount: 0,
     image: "img/event/event-forest-bulbul-gone",
+    because: "직박구리가 사라져",
     textbook: "49쪽",
   },
   {
@@ -162,18 +164,20 @@ export const forestEvents: EventCard[] = [
     targets: ["role:decomposer"],
     amount: 0,
     image: "img/event/event-forest-decomposer-gone",
+    because: "버섯과 곰팡이가 사라져",
     textbook: "47쪽",
   },
   {
     id: "forest.drought",
     theme: "forest",
-    title: "가뭄이 들었어요",
-    story: "몇 달 동안 비가 오지 않아 땅이 갈라졌어요. 풀이 잘 자라지 못해요.",
+    title: "가뭄이 이어지고 있어요",
+    story: "몇 년째 비가 적게 와서 땅이 갈라졌어요. 풀이 잘 자라지 못해요.",
     type: "abiotic",
     targets: ["role:producer"],
-    amount: 0.6,
-    duration: 3,
+    amount: 0.5,
+    duration: 10,
     image: "img/event/event-forest-drought",
+    because: "가뭄이 들어",
     textbook: "42쪽",
   },
   {
@@ -186,6 +190,7 @@ export const forestEvents: EventCard[] = [
     amount: 0.75,
     duration: 2,
     image: "img/event/event-forest-longrain",
+    because: "오랜 장마로 햇빛이 모자라",
     textbook: "42쪽",
   },
   {
@@ -197,6 +202,7 @@ export const forestEvents: EventCard[] = [
     targets: ["role:producer"],
     amount: 0.85,
     image: "img/event/event-forest-road",
+    because: "숲에 길이 나서",
   },
   {
     id: "forest.snake-poaching",
@@ -207,6 +213,7 @@ export const forestEvents: EventCard[] = [
     targets: ["forest.snake"],
     amount: 0.3,
     image: "img/event/event-forest-snake-poaching",
+    because: "사람들이 뱀을 잡아가서",
   },
   {
     id: "forest.rabbit-boom",
@@ -217,5 +224,6 @@ export const forestEvents: EventCard[] = [
     targets: ["forest.rabbit"],
     amount: 1.8,
     image: "img/event/event-forest-rabbit-boom",
+    because: "토끼가 크게 늘어",
   },
 ];

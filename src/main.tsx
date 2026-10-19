@@ -6,6 +6,7 @@ import "@fontsource/noto-sans-kr/400.css";
 import "@fontsource/noto-sans-kr/700.css";
 import "./styles/tokens.css";
 import "./styles/app.css";
+import "./styles/investigate.css";
 import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(
