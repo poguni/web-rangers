@@ -1,0 +1,47 @@
+# ── 스크린샷 (개발·테스트 중 생성, 저장소에 올리지 않음) ──
+screenshots/
+screenshot*/
+*.screenshot.png
+*screenshot*.png
+*screenshot*.jpg
+*screenshot*.jpeg
+*screenshot*.webp
+*Screenshot*.png
+*Screenshot*.jpg
+스크린샷*
+화면 캡처*
+# Playwright MCP 브라우저 캡처 기본 저장 폴더
+.playwright-mcp/
+# Playwright 테스트 결과(실패 시 스크린샷·영상·trace)
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# ── Node / Vite ──
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+coverage/
+
+# ── 로그 ──
+*.log
+npm-debug.log*
+
+# ── 환경 변수 ──
+.env
+.env.*
+!.env.example
+
+# ── 에디터·OS ──
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Claude Code / oh-my-claudecode 작업 상태 ──
+.omc/

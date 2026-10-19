@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>먹이그물 탐험대 디자인 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+ /* 바탕: 탐험 수첩 종이 */
+ --paper:#FBF6EA;--paper-2:#F3EBD7;--card:#FFFDF7;--ink:#2B2A26;--ink-2:#6B6559;--line:#E2D6BC;
+ /* 브랜드 */
+ --navy:#24466B;--navy-2:#E3ECF5;--gold:#E3A81B;--gold-2:#FFF3D1;
+ /* 생물 역할 (교과서 4학년: 생산자·소비자·분해자) */
+ --producer:#3F9A4E;--producer-2:#E3F1DE;--consumer:#E07B39;--consumer-2:#FBE7D9;--decomposer:#8B6B4E;--decomposer-2:#F1E6DB;
+ /* 변화 */
+ --up:#1F8A70;--up-2:#DDF2EA;--down:#D1495B;--down-2:#FBE3E6;--same:#8C8577;
+ /* 테마 */
+ --forest:#2F6B3B;--river:#3F86A0;--sea:#1F5F8B;
+ --r-lg:20px;--r-md:14px;--r-sm:10px;
+ --shadow:0 2px 0 rgba(43,42,38,.08),0 8px 24px rgba(43,42,38,.08);
+ --f-title:"Jua","Noto Sans KR",sans-serif;--f-body:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#E9E2D0;color:var(--ink);font:16px/1.55 var(--f-body);word-break:keep-all}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,h4{font-family:var(--f-title);font-weight:400;margin:0;line-height:1.3}
+
+/* ── 시안 상단 바 ── */
+.mock-bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 20px;background:#22324A;color:#F5EFE0;flex-wrap:wrap}
+.mock-bar strong{font-family:var(--f-title);font-weight:400;font-size:18px;white-space:nowrap}
+.mock-bar nav{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:thin}
+.mock-bar nav a{color:#C9D3E2;text-decoration:none;font-size:14px;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.mock-bar nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.mock-bar nav a.on{background:var(--gold);color:#2B2A26;font-weight:700}
+.mock-bar .dl{display:flex;gap:6px;flex-wrap:wrap}
+.mock-bar .dl a{font-size:13px;color:#F5EFE0;border:1px solid #4A5D7A;border-radius:8px;padding:5px 10px;text-decoration:none;white-space:nowrap}
+.mock-bar .dl a:hover{border-color:var(--gold);color:var(--gold)}
+.mock-note{max-width:1308px;margin:14px auto 0;padding:0 20px;color:#6B6559;font-size:14px}
+.mock-note b{color:#2B2A26}
+
+/* ── 기기 프레임: 크롬북 1280×800 (브라우저 창 약 1280×690) ── */
+.stage{padding:12px 20px 60px}
+.device{max-width:1308px;margin:0 auto;background:#3A3D42;border-radius:22px;padding:14px;box-shadow:0 20px 50px rgba(43,42,38,.25)}
+.device .chrome{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:#DEE1E6;border-radius:10px 10px 0 0;font-size:12px;color:#5F6368}
+.device .chrome i{width:10px;height:10px;border-radius:50%;background:#B9BDC3;display:inline-block}
+.device .chrome span{background:#fff;border-radius:999px;padding:3px 12px;margin-left:8px;flex:1;max-width:420px}
+.app{background:var(--paper);overflow:auto;height:690px;display:flex;flex-direction:column;border-radius:0 0 10px 10px;
+ background-image:radial-gradient(rgba(43,42,38,.05) 1px,transparent 1px);background-size:22px 22px}
+.device.board-dev .app{height:auto;aspect-ratio:16/9;border-radius:10px}
+.screen[hidden]{display:none}
+.screen:not([hidden]){display:flex;flex-direction:column;flex:1 0 auto}
+.board-wrap{flex:1}
+.device-label{max-width:1308px;margin:0 auto 8px;font-size:13px;color:#6B6559;display:flex;gap:10px;flex-wrap:wrap}
+.device-label b{background:#2B2A26;color:#FBF6EA;border-radius:6px;padding:1px 8px;font-weight:500}
+
+/* ── 앱 상단 바 ── */
+.appbar{display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--card);border-bottom:2px solid var(--line);flex-wrap:wrap;flex:none}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--f-title);font-size:21px;color:var(--navy)}
+.logo .mark{width:36px;height:36px;border-radius:11px;background:var(--navy);display:grid;place-items:center;font-size:19px}
+.appbar .crumb{color:var(--ink-2);font-size:14px}
+.appbar .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--paper-2);font-size:14px;font-weight:500;white-space:nowrap}
+.pill.gold{background:var(--gold-2);color:#8A5E00}
+.pill.navy{background:var(--navy-2);color:var(--navy)}
+.iconbtn{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;font-size:19px}
+
+.body{padding:12px 18px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow)}
+.panel h3{font-size:20px;margin-bottom:10px}
+.sub{color:var(--ink-2);font-size:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.grow{flex:1 1 380px;min-width:0}
+
+/* ── 버튼 ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;border:0;font-weight:700;font-size:16px;background:var(--navy);color:#fff;box-shadow:0 4px 0 #142C47}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #142C47}
+.btn.gold{background:var(--gold);color:#2B2A26;box-shadow:0 4px 0 #A87A06}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 14px;border-radius:12px}
+
+/* ── 역할 배지 ── */
+.role{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;color:#fff;white-space:nowrap}
+.role.producer{background:var(--producer)}.role.consumer{background:var(--consumer)}.role.decomposer{background:var(--decomposer)}
+.role.producer::before{content:"🌱"}.role.consumer::before{content:"🐾"}.role.decomposer::before{content:"🍄"}
+
+/* ── 변화 표시 ── */
+.chg{display:inline-flex;align-items:center;gap:3px;font-weight:700;font-size:14px;padding:1px 8px;border-radius:8px;white-space:nowrap}
+.chg.up{color:var(--up);background:var(--up-2)}.chg.down{color:var(--down);background:var(--down-2)}.chg.same{color:var(--same);background:var(--paper-2)}.chg.gone{color:#fff;background:#6B6559}
+
+/* ── 01 메인 ── */
+.hello{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hello .badge{width:72px;height:72px;border-radius:50%;background:var(--navy);display:grid;place-items:center;font-size:36px;box-shadow:0 0 0 5px var(--gold-2)}
+.hello h1{font-size:27px}
+.themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.theme{border-radius:var(--r-lg);overflow:hidden;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);text-align:left;padding:0;display:flex;flex-direction:column}
+.theme .art{height:120px;display:flex;align-items:flex-end;justify-content:center;gap:6px;font-size:38px;padding-bottom:10px;position:relative}
+.theme .art .tag{position:absolute;top:10px;left:10px;background:rgba(255,253,247,.92);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+.theme.forest .art{background:linear-gradient(180deg,#CFE6C4,#7FB27A)}
+.theme.river .art{background:linear-gradient(180deg,#DDEFD6 0%,#A9D3B0 45%,#8CC0CF 100%)}
+.theme.sea .art{background:linear-gradient(180deg,#D6EAF5 0%,#7FB3D5 55%,#2E6F9E 100%)}
+.theme .info{padding:10px 14px 12px;display:flex;flex-direction:column;gap:6px}
+.theme h3{font-size:22px;margin:0;display:flex;align-items:center;gap:8px}
+.tb-tag{font-family:var(--f-body);font-size:12px;font-weight:700;background:var(--navy);color:#fff;border-radius:6px;padding:1px 7px}
+.stars{color:var(--gold);letter-spacing:2px;font-size:17px}
+.stars .off{color:#D9CFB8}
+.meter{height:10px;border-radius:99px;background:var(--paper-2);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--producer);border-radius:99px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mode{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--r-md);border:2px solid var(--line);background:var(--card);text-align:left;box-shadow:0 3px 0 var(--line)}
+.mode .ic{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;font-size:25px;flex:none}
+.mode b{display:block;font-size:16px}
+.mode span{font-size:13px;color:var(--ink-2)}
+
+/* ── 02 분류 놀이 ── */
+.seg{display:inline-flex;background:var(--paper-2);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:15px;color:var(--ink-2)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 0 var(--line)}
+.deck{display:flex;gap:10px;flex-wrap:wrap}
+.scard{width:104px;border-radius:var(--r-md);background:var(--card);border:2px solid var(--line);box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 6px 6px;gap:2px}
+.scard .e{font-size:38px;line-height:1.2}
+.scard b{font-size:15px}
+.scard.lift{transform:translateY(-8px) rotate(-3deg);border-color:var(--navy);box-shadow:0 10px 18px rgba(36,70,107,.25)}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-height:0}
+.bin{border-radius:var(--r-lg);border:3px dashed var(--c);background:var(--c2);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.bin h3{font-size:22px;color:var(--c);display:flex;align-items:center;gap:8px;margin:0}
+.bin .desc{font-size:14px;color:var(--ink-2)}
+.bin .got{display:flex;gap:8px;flex-wrap:wrap}
+.bin .got span{background:var(--card);border-radius:10px;padding:4px 10px;font-weight:700;font-size:14px;border:2px solid var(--line)}
+.bin.target{outline:4px solid var(--navy);outline-offset:2px}
+
+/* ── 먹이그물 판 ── */
+.web{width:100%;height:auto;display:block}
+.web .edge{stroke:#8D8574;stroke-width:2.4;fill:none}
+.web .edge.ok{stroke:var(--producer)}
+.web .edge.bad{stroke:var(--down);stroke-dasharray:8 6}
+.web .edge.hint{stroke:var(--gold);stroke-dasharray:3 7;stroke-width:3}
+.web .edge.dim{stroke:#DDD4C2}
+.web .edge.flow-anim{stroke:var(--gold);stroke-width:4.5;stroke-dasharray:10 14;animation:flow 1s linear infinite}
+.web .edge.decomp{stroke:var(--decomposer);stroke-dasharray:2 6;stroke-width:1.8;opacity:.75}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.web .node circle.bg{fill:var(--card);stroke-width:5}
+.web .node text.emo{font-size:30px;text-anchor:middle;dominant-baseline:central}
+.web .node text.nm{font:700 15px var(--f-body);text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:4px}
+.web .node .ring{fill:none;stroke:var(--gold);stroke-width:4;opacity:0}
+.web .node.hot .ring{opacity:1;animation:pulse 1.2s ease-in-out infinite}
+.web .node.pick .ring{opacity:1;stroke:var(--navy);stroke-dasharray:6 5}
+.web .node.ghost{opacity:.3}
+.web .node.gone circle.bg{fill:#EFE9DC;stroke-dasharray:5 5}
+.web .node.gone text.emo{opacity:.35}
+.web .cap{font:700 13px var(--f-body);fill:var(--decomposer)}
+@keyframes pulse{0%,100%{r:40}50%{r:46}}
+.canvas{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--r-lg);padding:6px;box-shadow:var(--shadow)}
+
+/* ── 03 만들기 ── */
+.build{display:grid;grid-template-columns:200px 1fr;gap:14px;flex:1;min-height:0}
+.tray{display:flex;flex-direction:column;gap:8px}
+.mini-card{display:flex;align-items:center;gap:9px;padding:8px;border-radius:var(--r-md);background:var(--card);border:2px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.mini-card .emo{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:24px;background:var(--paper-2);border-bottom:4px solid var(--c,var(--line));flex:none}
+.mini-card b{display:block;font-size:15px}
+.mini-card.dragging{transform:rotate(-3deg);border-color:var(--navy);box-shadow:0 10px 20px rgba(36,70,107,.25)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.progress{flex:1 1 220px;display:flex;align-items:center;gap:10px}
+.progress .meter{flex:1;height:14px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.switch{width:46px;height:28px;border-radius:99px;background:#D9CFB8;position:relative;border:0;padding:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.switch.on{background:var(--decomposer)}.switch.on::after{left:21px}
+.toast{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:var(--r-md);background:var(--down-2);border:2px solid #F0B7BF;font-size:15px}
+.toast .ic{font-size:24px}
+.toast b{font-size:16px}
+.toast.ok{background:var(--up-2);border-color:#A9DCC9}
+.toast.info{background:var(--navy-2);border-color:#B9CCE2}
+.howto{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-2);background:var(--paper);border-radius:var(--r-md);padding:10px;border:2px dashed var(--line)}
+.howto b{color:var(--ink)}
+.build .web{max-height:500px}
+.build .toast{font-size:14px}
+
+/* ── 04 사건·예측 ── */
+.event-card{background:#FFFDF2;border-radius:var(--r-lg);border:3px solid #2B2A26;box-shadow:5px 5px 0 #2B2A26;overflow:hidden;transform:rotate(-1deg)}
+.event-card .head{background:#2B2A26;color:#FBF6EA;display:flex;justify-content:space-between;padding:6px 14px;font-size:13px;font-weight:700}
+.event-card .pic{font-size:50px;text-align:center;padding:8px 0 0;position:relative}
+.event-card .pic .x{position:absolute;left:calc(50% + 26px);top:14px;transform:rotate(12deg);font:900 16px var(--f-body);color:var(--down);border:3px solid var(--down);border-radius:8px;padding:1px 7px;background:rgba(255,253,242,.9)}
+.event-card .pic .em{filter:grayscale(1);opacity:.55}
+.event-card h2{font-size:26px;text-align:center;padding:0 12px}
+.event-card p{padding:2px 18px 0;margin:0;text-align:center;color:#4A463D;font-size:15px}
+.event-card .meta{display:flex;justify-content:center;gap:8px;padding:8px 12px 12px;flex-wrap:wrap}
+.q{display:flex;flex-direction:column;gap:8px;padding:8px 0;border-top:2px dashed var(--line)}
+.q:first-of-type{border-top:0;padding-top:0}
+.q .qh{display:flex;gap:9px;align-items:center}
+.q .num{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;flex:none}
+.q .qh b{font-size:17px}
+.q .pts{margin-left:auto;font-size:13px;color:#8A5E00;background:var(--gold-2);border-radius:99px;padding:1px 9px;white-space:nowrap}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.choice{min-height:54px;border-radius:var(--r-md);border:2px solid var(--line);background:var(--card);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 0 var(--line)}
+.choice .ar{font-size:21px}
+.choice.up .ar{color:var(--up)}.choice.down .ar{color:var(--down)}.choice.same .ar{color:var(--same)}
+.choice.sel{border-color:var(--navy);background:var(--navy-2);box-shadow:0 3px 0 var(--navy)}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.pick{border:2px solid var(--line);background:var(--card);border-radius:var(--r-md);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:0;font-size:15px;font-weight:700;box-shadow:0 3px 0 var(--line)}
+.pick .e{font-size:30px}
+.pick.sel{border-color:var(--navy);background:var(--navy-2);box-shadow:0 3px 0 var(--navy)}
+.reasons{display:flex;flex-direction:column;gap:7px}
+.reason{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:var(--r-md);padding:8px 12px;font-size:15px}
+.reason .dot{width:22px;height:22px;border-radius:50%;border:2px solid #B9AE95;flex:none}
+.reason .mini{font-size:20px;white-space:nowrap;flex:none}
+.reason.sel{border-color:var(--navy);background:var(--navy-2)}
+.reason.sel .dot{border:7px solid var(--navy)}
+
+/* ── 05 관찰 ── */
+.obs-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.banner{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r-md);background:#2B2A26;color:#FBF6EA;flex-wrap:wrap;font-size:15px}
+.banner .e{font-size:24px}
+.turns{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.turn{min-width:44px;height:34px;padding:0 6px;border-radius:999px;display:grid;place-items:center;font-weight:700;background:var(--paper-2);color:var(--ink-2);font-size:13px}
+.turn.done{background:var(--navy-2);color:var(--navy)}
+.turn.now{background:var(--navy);color:#fff;box-shadow:0 0 0 3px var(--gold-2)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.obs{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;flex:1;min-height:0}
+.bars{display:flex;flex-direction:column;gap:1px}
+.bar .chg{line-height:1.45;font-size:13px}
+.bar{display:grid;grid-template-columns:28px 64px 1fr 66px;align-items:center;gap:7px;padding:1px 4px;border-radius:8px}
+.bar .e{font-size:20px;text-align:center}
+.bar .n{font-weight:700;font-size:14px}
+.bar .track{height:18px;background:var(--paper-2);border-radius:7px;position:relative}
+.bar .track .fill{position:absolute;inset:0 auto 0 0;border-radius:7px;transition:width .6s ease}
+.bar .track .base{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed #A39A86}
+.bar.hl{background:var(--gold-2);outline:2px solid #F2D27A}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+
+/* ── 06 결과 ── */
+.report{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.score{border-radius:var(--r-md);padding:12px 14px;border:2px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:4px}
+.score .top{display:flex;justify-content:space-between;align-items:center}
+.score .mk{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:900;color:#fff}
+.score.ok .mk{background:var(--up)}.score.no .mk{background:var(--down)}
+.score .pt{font-family:var(--f-title);font-size:25px}
+.score.ok{border-color:#A9DCC9}.score.no{border-color:#F0B7BF}
+.total{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.total .big{font-family:var(--f-title);font-size:46px;color:var(--navy);line-height:1}
+.chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.link{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 12px;border-radius:var(--r-md);background:var(--card);border:2px solid var(--line);min-width:96px}
+.link .e{font-size:30px}
+.link b{font-size:16px}
+.chain .to{font-size:24px;color:var(--gold);font-weight:900}
+.explain{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.ex{display:flex;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--paper);border:2px solid var(--line)}
+.ex .e{font-size:28px}
+.ex p{margin:2px 0 0;font-size:15px}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.act{border-radius:var(--r-lg);border:2px solid var(--line);background:var(--card);padding:14px;text-align:left;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 var(--line)}
+.act .e{font-size:32px}
+.act b{font-size:17px}
+.act.sel{border-color:var(--producer);box-shadow:0 4px 0 var(--producer);background:#F2FAEF}
+.act.off{opacity:.5}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+.tbl th{font-size:13px;color:var(--ink-2);font-weight:700;background:var(--paper)}
+.ok-t{color:var(--up);font-weight:700}.no-t{color:var(--down);font-weight:700}
+
+/* ── 07 도감 ── */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:999px;border:2px solid var(--line);background:var(--card);font-weight:700}
+.tab.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;align-content:start}
+.sp-card{border-radius:var(--r-md);background:var(--card);border:2px solid var(--line);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 3px 0 var(--line);text-align:left;padding:0}
+.sp-card .pic{height:72px;display:grid;place-items:center;font-size:38px;background:var(--paper-2);border-bottom:5px solid var(--c)}
+.sp-card .t{padding:6px 8px 8px;display:flex;flex-direction:column;gap:3px}
+.sp-card b{font-size:15px}
+.sp-card.locked .pic{filter:grayscale(1) brightness(.2);opacity:.35}
+.sp-card.locked b{color:#B9AE95}
+.sp-card.rare{border-color:var(--gold);box-shadow:0 3px 0 var(--gold)}
+.sp-card.sel{outline:4px solid var(--navy);outline-offset:2px}
+.detail{display:flex;flex-direction:column;gap:10px}
+.detail .pic{height:150px;border-radius:var(--r-md);display:grid;place-items:center;font-size:84px;background:linear-gradient(180deg,#E8F0DE,#CFE2C2);position:relative}
+.detail .rare-tag{position:absolute;top:10px;right:10px;background:var(--down);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;font-size:15px;margin:0}
+.kv dt{color:var(--ink-2);font-weight:700}.kv dd{margin:0}
+.fact{background:var(--gold-2);border-radius:var(--r-md);padding:10px 12px;font-size:15px}
+
+/* ── 08 모둠 대항전 (전자칠판 1920×1080, 화면 너비에 비례: cqw 단위) ── */
+.board-wrap{container-type:inline-size;display:flex}
+.board{background:#1E2B3D;color:#F5EFE0;flex:1;padding:2cqw 2.4cqw;display:flex;flex-direction:column;gap:1.4cqw}
+.board .bh{display:flex;align-items:center;gap:1.2cqw;flex-wrap:wrap}
+.board h2{font-size:2.3cqw}
+.board .bpill{font-size:1.05cqw;background:#2A3B52;color:#F5EFE0;border-radius:999px;padding:.4cqw 1cqw;white-space:nowrap}
+.board .big-event{display:flex;align-items:center;gap:2cqw;background:#FFFDF2;color:#2B2A26;border-radius:1.4cqw;padding:1.4cqw 2cqw}
+.board .big-event .e{font-size:5.4cqw}
+.board .big-event .k{font-size:1.1cqw;color:#8A5E00;font-weight:700}
+.board .big-event h3{font-size:2.8cqw}
+.board .big-event p{font-size:1.6cqw;margin:.3cqw 0 0}
+.timer{width:8cqw;height:8cqw;flex:none;margin-left:auto}
+.timer text{font-family:var(--f-title);font-size:34px;fill:#2B2A26;text-anchor:middle;dominant-baseline:central}
+.groups{display:grid;grid-template-columns:repeat(6,1fr);gap:1cqw;flex:1}
+.grp{border-radius:1.2cqw;background:#2A3B52;padding:1cqw;display:flex;flex-direction:column;gap:.7cqw;border:.25cqw solid transparent}
+.grp .gn{font-family:var(--f-title);font-size:1.8cqw}
+.grp .ans{display:flex;gap:.5cqw;flex:1}
+.grp .ans button{flex:1;min-height:4.4cqw;min-height:44px;border-radius:.8cqw;border:0;background:#3B4F6B;color:#C9D3E2;font-size:1.9cqw;font-weight:900}
+.grp .ans button.sel{background:var(--navy-2);color:var(--navy)}
+.grp.hide .ans button.sel{background:#3B4F6B;color:#C9D3E2}
+.grp.done{border-color:var(--gold)}
+.grp .st{font-size:1.05cqw;color:#9FB0C8}
+.bfoot{display:flex;gap:2cqw;align-items:flex-end}
+.scoreboard{display:flex;flex-direction:column;gap:.6cqw;flex:1}
+.sb{display:grid;grid-template-columns:3cqw 8cqw 1fr 5cqw;align-items:center;gap:1cqw;font-size:1.5cqw}
+.sb .rk{font-family:var(--f-title);font-size:1.9cqw;color:var(--gold);text-align:center}
+.sb .tr{height:1.7cqw;background:#2A3B52;border-radius:.6cqw;overflow:hidden}
+.sb .tr i{display:block;height:100%;background:linear-gradient(90deg,#E3A81B,#F3C95A);border-radius:.6cqw}
+.sb b{font-family:var(--f-title);font-weight:400;text-align:right}
+.bbtn{min-height:5cqw;font-size:1.6cqw;padding:0 2cqw;border-radius:1.2cqw}
+
+/* ── 09 교사 ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:14px}
+.stat .v{font-family:var(--f-title);font-size:32px;color:var(--navy);line-height:1.2}
+.stat .l{font-size:14px;color:var(--ink-2)}
+.prepost{display:flex;align-items:center;gap:6px}
+.prepost .b{height:12px;border-radius:6px}
+.prepost .b.pre{background:#C9BFA8}.prepost .b.post{background:var(--navy)}
+
+/* ── 10 토큰 ── */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw{border-radius:var(--r-md);overflow:hidden;border:2px solid var(--line);background:var(--card)}
+.sw i{display:block;height:60px}
+.sw div{padding:7px 10px;font-size:13px}
+.sw b{display:block;font-size:14px}
+.type-scale{display:flex;flex-direction:column;gap:8px}
+.type-scale div{display:flex;align-items:baseline;gap:16px;border-bottom:1px dashed var(--line);padding-bottom:6px;flex-wrap:wrap}
+.type-scale code{font-size:12px;color:var(--ink-2);min-width:200px}
+.comp-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ── 반응형 ── */
+@media (max-width:1000px){
+ .app{height:auto;min-height:600px}
+ .build,.obs{grid-template-columns:1fr}
+ .tray{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+ .tray .mini-card{flex:0 0 160px}
+ .tray .howto{flex:0 0 220px}
+ .bins{grid-template-columns:1fr}
+ .groups{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:640px){
+ .stage{padding:10px 8px 40px}
+ .device{padding:6px;border-radius:14px}
+ .body{padding:12px}
+ .appbar{padding:10px 12px}
+ .hello h1{font-size:22px}
+ .choices{grid-template-columns:1fr}
+ .pick-grid{grid-template-columns:repeat(2,1fr)}
+ .reason{flex-wrap:wrap}.reason .mini{white-space:normal}
+ .bar{grid-template-columns:26px 60px 1fr 60px}
+ .device.board-dev .app{aspect-ratio:auto}
+ .groups{grid-template-columns:repeat(2,1fr)}
+ .board h2{font-size:20px}.board .big-event h3{font-size:22px}.board .big-event p,.sb{font-size:15px}.grp .gn{font-size:18px}.grp .st,.board .bpill,.board .big-event .k{font-size:12px}
+ .timer{width:70px;height:70px}.bbtn{font-size:16px;min-height:52px}.sb{grid-template-columns:28px 64px 1fr 44px}.sb .tr{height:14px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.mock-bar{display:none}}
+</style>
+</head>
+<body>
+
+<header class="mock-bar">
+ <strong>🧭 먹이그물 탐험대 · 디자인 시안 v0.4</strong>
+ <nav aria-label="시안 화면">
+  <a href="#main" data-tab="main">01 메인</a>
+  <a href="#sort" data-tab="sort">02 분류 놀이</a>
+  <a href="#build" data-tab="build">03 먹이그물 만들기</a>
+  <a href="#predict" data-tab="predict">04 사건·예측</a>
+  <a href="#observe" data-tab="observe">05 관찰</a>
+  <a href="#result" data-tab="result">06 탐구 보고서</a>
+  <a href="#dex" data-tab="dex">07 카드 도감</a>
+  <a href="#team" data-tab="team">08 모둠 대항전</a>
+  <a href="#teacher" data-tab="teacher">09 교사 화면</a>
+  <a href="#tokens" data-tab="tokens">10 디자인 토큰</a>
+ </nav>
+ <div class="dl">
+  <a href="design-mockup.html" download="web-rangers-design-mockup.html">⬇ HTML</a>
+  <a href="DESIGN.md" download="web-rangers-DESIGN.md">⬇ DESIGN.md</a>
+  <a href="image-prompts.md" download="web-rangers-image-prompts.md">⬇ 그림 프롬프트</a>
+ </div>
+</header>
+<p class="mock-note">초등 4학년 2학기 2단원 '생물과 환경'(교과서 42~49쪽) 기준 시안입니다. 테마는 교과서 43~45쪽과 같은 <b>숲·강·바다</b>이고, 숲 먹이그물은 <b>교과서 49쪽</b>을 그대로 옮겼습니다(교사 확인 완료).  생물 그림은 이모지로 대신한 <b>임시 그림</b>입니다(실제 그림은 AI로 생성, <code>image-prompts.md</code>). 05 화면의 ▶ 재생을 누르면 생물 수 막대가 움직입니다.</p>
+
+<div class="stage">
+<div class="device-label" id="devLabel"><b>크롬북 1280×800 · 크롬</b><span>브라우저 창 안쪽 약 1280×690 기준. 핵심 조작은 스크롤 없이 보이게 배치</span></div>
+<div class="device" id="device"><div class="chrome"><i></i><i></i><i></i><span>webrangers.github.io</span></div><div class="app">
+
+<!-- ═════════ 01 메인 ═════════ -->
+<section class="screen" id="main" aria-label="01 메인">
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="sp"></span>
+  <span class="pill gold">⭐ 별 9개</span>
+  <span class="pill">🃏 카드 14/41</span>
+  <span class="pill navy">👤 4학년 2반 13번</span>
+  <button class="iconbtn" aria-label="설정">⚙️</button>
+ </div>
+ <div class="body">
+  <div class="hello">
+   <div class="badge">🎒</div>
+   <div>
+    <h1>13번 탐험대원, 오늘의 사건을 해결해 볼까요?</h1>
+    <div class="sub">생태계에 무슨 일이 생기면, 화살표를 따라가며 까닭을 추리해 보세요.</div>
+   </div>
+  </div>
+  <div class="themes">
+   <button class="theme forest">
+    <div class="art"><span class="tag">사건 2/5</span>🌰🐿️🐦🐍🦅</div>
+    <div class="info">
+     <h3>숲 <span class="tb-tag">교과서 49쪽</span></h3>
+     <div class="sub">도토리·다람쥐·직박구리·매가 사는 곳</div>
+     <div class="stars">★★★★★<span class="off">★★★★★★★★★★</span></div>
+     <div class="meter"><i style="width:40%"></i></div>
+    </div>
+   </button>
+   <button class="theme river">
+    <div class="art"><span class="tag">사건 1/3</span>🌾🐌🐟🦆🪶</div>
+    <div class="info">
+     <h3>강 <span class="tb-tag">교과서 44쪽</span></h3>
+     <div class="sub">붕어마름·다슬기·오리·왜가리가 사는 곳</div>
+     <div class="stars">★★★★<span class="off">★★★★★</span></div>
+     <div class="meter"><i style="width:33%;background:var(--river)"></i></div>
+    </div>
+   </button>
+   <button class="theme sea">
+    <div class="art"><span class="tag">🔒 강 사건 2 해결하면 열려요</span>🌿🪼🐟🐢🐬</div>
+    <div class="info">
+     <h3>바다 <span class="tb-tag">교과서 45쪽</span></h3>
+     <div class="sub">미역·해파리·고등어·바다거북이 사는 곳</div>
+     <div class="stars"><span class="off">★★★★★★★★★</span></div>
+     <div class="meter"><i style="width:0%"></i></div>
+    </div>
+   </button>
+  </div>
+  <div class="panel">
+   <h3>무엇을 할까요? <span class="sub">— 숲 선택됨</span></h3>
+   <div class="modes">
+    <button class="mode" data-go="sort"><span class="ic" style="background:var(--producer-2)">🧺</span><span><b>분류 놀이</b><span>생산자·소비자·분해자 나누기</span></span></button>
+    <button class="mode" data-go="build"><span class="ic" style="background:#E3F1DE">🕸️</span><span><b>먹이그물 만들기</b><span>카드를 화살표로 이어요</span></span></button>
+    <button class="mode" data-go="predict"><span class="ic" style="background:var(--navy-2)">🔎</span><span><b>사건 탐구</b><span>예측하고 관찰해요</span></span></button>
+    <button class="mode"><span class="ic" style="background:var(--gold-2)">🧪</span><span><b>자유 실험실</b><span>마음대로 없애고 늘려 봐요</span></span></button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 02 분류 놀이 ═════════ -->
+<section class="screen" id="sort" aria-label="02 분류 놀이" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">분류 놀이 <span class="tb-tag">교과서 46~47쪽</span></span>
+  <span class="sp"></span>
+  <div class="seg" role="tablist"><button class="on">생산자·소비자·분해자</button><button>생물 요소·비생물 요소</button></div>
+  <button class="iconbtn" aria-label="나가기">✕</button>
+ </div>
+ <div class="body">
+  <div class="row" style="align-items:center;justify-content:space-between">
+   <div><b style="font-size:17px">카드를 골라 알맞은 바구니에 넣어 보세요.</b> <span class="sub">끌어서 넣거나, 카드를 누른 다음 바구니를 눌러도 돼요.</span></div>
+   <span class="pill navy">남은 카드 6장</span>
+  </div>
+  <div class="deck">
+   <div class="scard lift"><span class="e">🍄</span><b>버섯</b></div>
+   <div class="scard"><span class="e">🍀</span><b>괭이밥</b></div>
+   <div class="scard"><span class="e">🐦</span><b>박새</b></div>
+   <div class="scard"><span class="e">🌼</span><b>개망초</b></div>
+   <div class="scard"><span class="e">🧫</span><b>곰팡이</b></div>
+   <div class="scard"><span class="e">🪸</span><b>산호</b></div>
+  </div>
+  <div class="bins">
+   <div class="bin" style="--c:var(--producer);--c2:var(--producer-2)"><h3>🌱 생산자</h3><div class="desc">햇빛 등을 이용해 스스로 양분을 만들어요.</div><div class="got"><span>🌿 풀</span><span>🌰 도토리</span><span>🌊 미역</span></div></div>
+   <div class="bin" style="--c:var(--consumer);--c2:var(--consumer-2)"><h3>🐾 소비자</h3><div class="desc">다른 생물을 먹이로 하여 살아가요.</div><div class="got"><span>🐛 애벌레</span><span>🐇 토끼</span><span>🐸 개구리</span></div></div>
+   <div class="bin target" style="--c:var(--decomposer);--c2:var(--decomposer-2)"><h3>🍄 분해자</h3><div class="desc">죽은 생물이나 배출물을 분해해 양분을 얻고, 다른 생물이 이용할 수 있게 해요.</div><div class="got"></div></div>
+  </div>
+  <div class="toast ok" role="status"><span class="ic">✅</span><div><b>맞아요! 버섯은 분해자예요.</b> 죽은 나무나 낙엽을 분해해서 양분을 얻어요. 분해자가 없으면 죽은 생물이 그대로 쌓이게 돼요.</div></div>
+ </div>
+</section>
+
+<!-- ═════════ 03 먹이그물 만들기 ═════════ -->
+<section class="screen" id="build" aria-label="03 먹이그물 만들기" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">숲 › 먹이그물 만들기 <span class="tb-tag">교과서 49쪽</span></span>
+  <span class="sp"></span>
+  <span class="pill gold">⭐ 이번 판 ★★☆</span>
+  <button class="iconbtn" aria-label="나가기">✕</button>
+ </div>
+ <div class="body">
+  <div class="toolbar">
+   <div class="progress"><b>이은 화살표</b><div class="meter"><i id="buildMeter"></i></div><b id="buildCount"></b></div>
+   <button class="btn ghost sm">💡 힌트 (별 −1)</button>
+   <button class="btn ghost sm">📐 정리하기</button>
+   <span class="toggle">분해자 연결 보기 <button class="switch" id="decompSwitch" aria-pressed="false" aria-label="분해자 연결 보기"></button></span>
+  </div>
+  <div class="build">
+   <div class="tray" aria-label="카드 보관함">
+    <div class="sub"><b>카드 보관함</b></div>
+    <div class="mini-card dragging" style="--c:var(--consumer)"><span class="emo">🦅</span><div><b>매</b><span class="role consumer">소비자</span></div></div>
+    <div class="mini-card" style="--c:var(--consumer)"><span class="emo">🦦</span><div><b>족제비</b><span class="role consumer">소비자</span></div></div>
+    <div class="mini-card" style="--c:var(--decomposer)"><span class="emo">🍄</span><div><b>버섯</b><span class="role decomposer">분해자</span></div></div>
+    <div class="toast" role="status" style="flex-direction:column;gap:4px">
+     <b>🤔 방향을 다시 생각해 봐요!</b>
+     <span>개구리가 메뚜기를 먹어요. 화살표는 <b>먹히는 생물 → 먹는 생물</b>로 그려요.</span>
+    </div>
+    <div class="howto">
+     <div><b>잇는 방법</b> ① 끌어서 놓기 ② 먹히는 생물 누르고 → 먹는 생물 누르기</div>
+    </div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+    <div class="canvas"><svg class="web" id="webBuild" viewBox="0 0 960 530" role="img" aria-label="숲 먹이그물 만들기 판"></svg></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 04 사건·예측 ═════════ -->
+<section class="screen" id="predict" aria-label="04 사건·예측" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">숲 › 사건 탐구 1</span>
+  <span class="sp"></span>
+  <span class="pill navy">사건 → <b>예측</b> → 관찰 → 보고서</span>
+ </div>
+ <div class="body">
+  <div class="row" style="flex:1;min-height:0;align-items:stretch">
+   <div style="flex:1 1 300px;display:flex;flex-direction:column;gap:12px;min-width:0">
+    <article class="event-card" aria-label="사건 카드">
+     <div class="head"><span>📰 숲속 소식</span><span>교과서 48쪽 질문</span></div>
+     <div class="pic"><span class="em">🐸</span><span class="x">사라짐</span></div>
+     <h2>개구리가 모두 사라졌어요</h2>
+     <p>병이 돌아서 숲속 개구리가 한 마리도 남지 않았어요.</p>
+     <div class="meta"><span class="chg gone">✕ 개구리 100 → 0</span></div>
+    </article>
+    <div class="canvas"><svg class="web" id="webPredict" viewBox="0 0 960 530" role="img" aria-label="개구리가 깜빡이는 먹이그물"></svg></div>
+   </div>
+   <div class="panel" style="flex:1 1 470px;min-width:0">
+    <h3>🔎 탐험대원의 예측</h3>
+    <div class="q">
+     <div class="qh"><span class="num">1</span><b>8년 뒤 <u>풀</u>은 어떻게 될까요?</b><span class="pts">100점</span></div>
+     <div class="choices" data-group="q1">
+      <button class="choice up"><span class="ar">▲</span>늘어요</button>
+      <button class="choice down sel"><span class="ar">▼</span>줄어요</button>
+      <button class="choice same"><span class="ar">●</span>비슷해요</button>
+     </div>
+    </div>
+    <div class="q">
+     <div class="qh"><span class="num">2</span><b>가장 크게 변할 생물은?</b><span class="pts">150점</span></div>
+     <div class="pick-grid" data-group="q2">
+      <button class="pick sel"><span class="e">🦗</span>메뚜기</button>
+      <button class="pick"><span class="e">🦆</span>오리</button>
+      <button class="pick"><span class="e">🐍</span>뱀</button>
+      <button class="pick"><span class="e">🐇</span>토끼</button>
+     </div>
+    </div>
+    <div class="q">
+     <div class="qh"><span class="num">3</span><b>왜 그렇게 생각했나요?</b><span class="pts">100점</span></div>
+     <div class="reasons" data-group="q3">
+      <button class="reason"><span class="dot"></span><span class="mini">🐸🚫🌿</span>개구리가 풀을 먹지 않게 되어서 풀이 늘어요.</button>
+      <button class="reason sel"><span class="dot"></span><span class="mini">🐸✕ → 🦗▲ → 🌿▼</span>메뚜기를 먹던 개구리가 없어져 메뚜기가 늘고, 메뚜기가 풀을 많이 먹어요.</button>
+      <button class="reason"><span class="dot"></span><span class="mini">🐸 ⋯ 🌿</span>개구리와 풀은 이어져 있지 않아서 변하지 않아요.</button>
+     </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px">
+     <button class="btn ghost sm">🔊 읽어 주기</button>
+     <button class="btn gold" data-go="observe">예측 제출하고 관찰하기 →</button>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 05 관찰 ═════════ -->
+<section class="screen" id="observe" aria-label="05 관찰" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">숲 › 사건 탐구 1</span>
+  <span class="sp"></span>
+  <span class="pill navy">사건 → 예측 → <b>관찰</b> → 보고서</span>
+ </div>
+ <div class="body">
+  <div class="obs-top">
+   <div class="banner"><span class="e">🐸</span><b>개구리가 모두 사라졌어요</b><span style="opacity:.75">내 예측: 풀 ▼</span></div>
+   <div class="turns" id="turns" aria-label="해마다 진행"></div>
+   <div class="controls">
+    <button class="btn sm" id="play">▶ 재생</button>
+    <button class="btn ghost sm" id="step">1년 ⏭</button>
+    <button class="btn ghost sm" id="reset" aria-label="처음부터">↺</button>
+   </div>
+  </div>
+  <div class="obs">
+   <div class="canvas" style="display:flex;flex-direction:column;justify-content:space-between">
+    <svg class="web" id="webObserve" viewBox="0 0 960 530" role="img" aria-label="영향이 퍼지는 먹이그물"></svg>
+    <div class="legend" style="padding:2px 10px 6px"><span><i style="background:var(--gold)"></i>지금 영향이 전해지는 화살표</span><span>▲ 늘었어요</span><span>▼ 줄었어요</span></div>
+   </div>
+   <div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:0">
+    <h3 style="margin:0;font-size:18px">생물 수 <span class="sub">— 점선은 처음(100)</span></h3>
+    <div class="bars" id="bars"></div>
+    <div class="toast info" id="liveNote" role="status" style="margin-top:auto"><span class="ic">💬</span><div id="liveText"></div></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 06 탐구 보고서 ═════════ -->
+<section class="screen" id="result" aria-label="06 탐구 보고서" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">숲 › 사건 탐구 1</span>
+  <span class="sp"></span>
+  <span class="pill navy">사건 → 예측 → 관찰 → <b>보고서</b></span>
+ </div>
+ <div class="body">
+  <div class="panel total">
+   <div><div class="sub">이번 탐구 점수</div><div class="big">350점</div></div>
+   <div class="stars" style="font-size:30px">★★★</div>
+   <div class="sub" style="flex:1 1 260px">개구리와 이어지지 않은 풀까지 정확히 추리했어요! 다음 사건에서는 직박구리가 사라지면 어떻게 될지 살펴봐요.</div>
+   <span class="pill gold">🃏 새 카드: 매</span>
+  </div>
+  <div class="report">
+   <div class="score ok"><div class="top"><b>① 풀은 어떻게 될까?</b><span class="mk">○</span></div><div>내 답 ▼ 줄어요 · 결과 <span class="chg down">▼ 100 → 84</span></div><div class="pt">+100</div></div>
+   <div class="score ok"><div class="top"><b>② 가장 크게 변할 생물</b><span class="mk">○</span></div><div>내 답 🦗 메뚜기 · 결과 <span class="chg up">▲ 100 → 136</span></div><div class="pt">+150</div></div>
+   <div class="score ok"><div class="top"><b>③ 왜 그럴까?</b><span class="mk">○</span></div><div>개구리 ✕ → 메뚜기 ▲ → 풀 ▼ 순서로 영향이 퍼졌어요.</div><div class="pt">+100</div></div>
+  </div>
+  <div class="panel">
+   <h3>🧵 영향이 퍼진 길</h3>
+   <div class="chain">
+    <div class="link"><span class="e">🐸</span><b>개구리</b><span class="chg gone">✕ 사라짐</span></div><span class="to">→</span>
+    <div class="link"><span class="e">🦗</span><b>메뚜기</b><span class="chg up">▲ 136</span></div><span class="to">→</span>
+    <div class="link"><span class="e">🌿</span><b>풀</b><span class="chg down">▼ 84</span></div>
+   </div>
+   <div class="explain" style="margin-top:12px">
+    <div class="ex"><span class="e">🦗</span><div><b>메뚜기가 늘었어요.</b><p>메뚜기를 먹는 개구리가 사라졌기 때문이에요.</p></div></div>
+    <div class="ex"><span class="e">🌿</span><div><b>풀이 줄었어요.</b><p>풀을 먹는 메뚜기가 늘었기 때문이에요.</p></div></div>
+    <div class="ex"><span class="e">🦆</span><div><b>오리는 비슷해요.</b><p>개구리는 사라졌지만 메뚜기와 애벌레를 더 먹어서 크게 줄지 않았어요.</p></div></div>
+    <div class="ex"><span class="e">🐍</span><div><b>뱀이 조금 줄었어요.</b><p>먹이인 개구리가 사라졌지만, 다람쥐와 토끼를 먹고 버텼어요.</p></div></div>
+   </div>
+   <p class="sub" style="margin:10px 0 0">💡 먹이그물이 복잡하면 어떤 생물이 사라져도 다른 먹이를 먹고 살아갈 수 있어요. (교과서 49쪽)</p>
+  </div>
+  <div class="panel">
+   <h3>🛡️ 관리인 행동: 숲의 균형을 되찾아 볼까요? <span class="sub">— 1장만 고를 수 있어요</span></h3>
+   <div class="actions">
+    <button class="act sel"><span class="e">🐸</span><b>되살리기</b><span class="sub">다른 숲의 개구리를 옮겨 와 풀어 줘요.</span></button>
+    <button class="act"><span class="e">🏞️</span><b>보호 구역 정하기</b><span class="sub">고른 생물이 4년 동안 덜 죽어요.</span></button>
+    <button class="act off"><span class="e">💧</span><b>물 대 주기</b><span class="sub">지금은 가뭄이 아니라 필요 없어요.</span></button>
+   </div>
+   <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn">행동하고 4년 더 지켜보기 →</button></div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 07 카드 도감 ═════════ -->
+<section class="screen" id="dex" aria-label="07 카드 도감" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">카드 도감</span>
+  <span class="sp"></span>
+  <span class="pill">🃏 14 / 41</span>
+ </div>
+ <div class="body">
+  <div class="tabs"><button class="tab on">🌳 숲 12/16</button><button class="tab">🏞️ 강 2/11</button><button class="tab">🌊 바다 0/13</button><button class="tab">⭐ 특별 카드 1/4</button></div>
+  <div class="row" style="align-items:flex-start">
+   <div class="dex grow" style="flex:2 1 520px" id="dexGrid"></div>
+   <div class="panel detail" style="flex:1 1 300px;min-width:0">
+    <div class="pic">🦅<span class="rare-tag">멸종위기 야생생물 Ⅰ급</span></div>
+    <div><h2 style="font-size:28px">매</h2><span class="role consumer">소비자</span></div>
+    <dl class="kv">
+     <dt>사는 곳</dt><dd>바닷가 절벽, 넓은 들판</dd>
+     <dt>먹이</dt><dd>🦆 오리 · 🐦 직박구리 · 🐍 뱀 · 🐿️ 다람쥐 · 🐇 토끼</dd>
+     <dt>나를 먹는 동물</dt><dd>거의 없어요</dd>
+    </dl>
+    <div class="fact">💡 하늘에서 아주 빠르게 내리꽂히며 주로 날아다니는 새를 사냥해요.</div>
+    <button class="btn ghost sm">🕸️ 먹이그물에서 위치 보기</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 08 모둠 대항전 (전자칠판) ═════════ -->
+<section class="screen" id="team" aria-label="08 모둠 대항전" hidden>
+ <div class="board-wrap"><div class="board">
+  <div class="bh">
+   <h2>🏆 모둠 대항전 · 강 · 2라운드 / 3</h2>
+   <span style="flex:1"></span>
+   <span class="bpill">👁 답 가리기 켜짐</span>
+   <span class="bpill">전자칠판 진행</span>
+  </div>
+  <div class="big-event">
+   <span class="e">🐟</span>
+   <div style="flex:1 1 300px">
+    <div class="k">외래종이 들어왔어요 · 실제로 있었던 일</div>
+    <h3>큰입배스가 강에 들어왔어요</h3>
+    <p>질문: 8년 뒤 강에 사는 <b>붕어마름</b>은 어떻게 될까요?</p>
+   </div>
+   <svg class="timer" viewBox="0 0 130 130" aria-label="남은 시간 48초"><circle cx="65" cy="65" r="56" fill="#FFF3D1" stroke="#EADBB3" stroke-width="12"/><circle cx="65" cy="65" r="56" fill="none" stroke="#E3A81B" stroke-width="12" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="141" transform="rotate(-90 65 65)"/><text x="65" y="65">0:48</text></svg>
+  </div>
+  <div class="groups" id="groups"></div>
+  <div class="bfoot">
+   <div class="scoreboard">
+    <div class="bpill" style="align-self:flex-start">점수판</div>
+    <div class="sb"><span class="rk">1</span><span>3모둠</span><div class="tr"><i style="width:92%"></i></div><b>450</b></div>
+    <div class="sb"><span class="rk">2</span><span>1모둠</span><div class="tr"><i style="width:78%"></i></div><b>380</b></div>
+    <div class="sb"><span class="rk">3</span><span>5모둠</span><div class="tr"><i style="width:62%"></i></div><b>300</b></div>
+   </div>
+   <button class="btn gold bbtn">🔎 모두 공개하고 관찰하기</button>
+  </div>
+ </div></div>
+</section>
+
+<!-- ═════════ 09 교사 화면 ═════════ -->
+<section class="screen" id="teacher" aria-label="09 교사 화면" hidden>
+ <div class="appbar">
+  <div class="logo"><span class="mark">🧭</span>먹이그물 탐험대</div>
+  <span class="crumb">교사 메뉴 › 이 기기 결과</span>
+  <span class="sp"></span>
+  <button class="btn ghost sm">⬇ CSV 내보내기</button>
+  <button class="btn ghost sm">🔓 카드 모두 열기</button>
+ </div>
+ <div class="body">
+  <div class="stat-row">
+   <div class="stat"><div class="v">3명</div><div class="l">이 기기를 쓴 학생</div></div>
+   <div class="stat"><div class="v">2.7 → 5.0</div><div class="l">진단 평균 (사전 → 사후, 6점 만점)</div></div>
+   <div class="stat"><div class="v">33% → 100%</div><div class="l">간접 효과 문항(5번) 정답률</div></div>
+   <div class="stat"><div class="v">71%</div><div class="l">사건 탐구 예측 정답률</div></div>
+  </div>
+  <div class="panel" style="overflow-x:auto">
+   <h3>학생별 결과</h3>
+   <table class="tbl">
+    <thead><tr><th>번호</th><th>사전 → 사후</th><th>간접 효과(5번)</th><th>까닭 쓰기(6번, 사후)</th><th>진행</th><th>예측 정답률</th></tr></thead>
+    <tbody>
+     <tr><td>4-2-13</td><td><div class="prepost"><span class="b pre" style="width:40px"></span><span class="b post" style="width:100px"></span><b>2 → 5</b></div></td><td><span class="no-t">✕</span> → <span class="ok-t">○</span></td><td>"갈매기가 없어지면 게가 많아지고 게가 미역을 많이 먹어서 미역이 줄어요"</td><td>숲 2 · 강 1</td><td>75%</td></tr>
+     <tr><td>4-2-14</td><td><div class="prepost"><span class="b pre" style="width:80px"></span><span class="b post" style="width:120px"></span><b>4 → 6</b></div></td><td><span class="ok-t">○</span> → <span class="ok-t">○</span></td><td>"먹이그물은 다 이어져 있어서 멀리 있는 미역도 바뀌어요"</td><td>숲 3 · 강 2</td><td>86%</td></tr>
+     <tr><td>4-2-15</td><td><div class="prepost"><span class="b pre" style="width:40px"></span><span class="b post" style="width:80px"></span><b>2 → 4</b></div></td><td><span class="no-t">✕</span> → <span class="ok-t">○</span></td><td>"갈매기는 미역을 안 먹어서 상관없어요"</td><td>숲 1</td><td>50%</td></tr>
+    </tbody>
+   </table>
+   <p class="sub" style="margin:10px 0 0">💡 4-2-15 학생은 5번은 맞혔지만 까닭 쓰기에서 "직접 이어진 생물만 영향을 받는다"는 생각이 보여요. 숲 사건 탐구 1을 다시 해 보도록 안내해 주세요.</p>
+  </div>
+ </div>
+</section>
+
+<!-- ═════════ 10 디자인 토큰 ═════════ -->
+<section class="screen" id="tokens" aria-label="10 디자인 토큰" hidden>
+ <div class="appbar"><div class="logo"><span class="mark">🧭</span>디자인 토큰</div></div>
+ <div class="body">
+  <div class="panel"><h3>생물 역할 색 <span class="sub">— 교과서 4학년 분류(생산자·소비자·분해자). 색 + 아이콘 + 글자를 함께 써요</span></h3>
+   <div class="swatches">
+    <div class="sw"><i style="background:var(--producer)"></i><div><b>🌱 생산자</b>--producer #3F9A4E</div></div>
+    <div class="sw"><i style="background:var(--consumer)"></i><div><b>🐾 소비자</b>--consumer #E07B39</div></div>
+    <div class="sw"><i style="background:var(--decomposer)"></i><div><b>🍄 분해자</b>--decomposer #8B6B4E</div></div>
+   </div>
+  </div>
+  <div class="panel"><h3>브랜드·바탕·변화 색</h3>
+   <div class="swatches">
+    <div class="sw"><i style="background:var(--paper)"></i><div><b>종이</b>--paper #FBF6EA</div></div>
+    <div class="sw"><i style="background:var(--card)"></i><div><b>카드</b>--card #FFFDF7</div></div>
+    <div class="sw"><i style="background:var(--ink)"></i><div><b>잉크</b>--ink #2B2A26</div></div>
+    <div class="sw"><i style="background:var(--navy)"></i><div><b>탐험 남색</b>--navy #24466B</div></div>
+    <div class="sw"><i style="background:var(--gold)"></i><div><b>돋보기 금색</b>--gold #E3A81B</div></div>
+    <div class="sw"><i style="background:var(--up)"></i><div><b>늘어요 ▲</b>--up #1F8A70</div></div>
+    <div class="sw"><i style="background:var(--down)"></i><div><b>줄어요 ▼</b>--down #D1495B</div></div>
+    <div class="sw"><i style="background:var(--same)"></i><div><b>비슷해요 ●</b>--same #8C8577</div></div>
+   </div>
+  </div>
+  <div class="panel"><h3>테마 색</h3>
+   <div class="swatches">
+    <div class="sw"><i style="background:linear-gradient(180deg,#CFE6C4,#7FB27A)"></i><div><b>숲</b>--forest #2F6B3B</div></div>
+    <div class="sw"><i style="background:linear-gradient(180deg,#DDEFD6,#A9D3B0 45%,#8CC0CF)"></i><div><b>강</b>--river #3F86A0</div></div>
+    <div class="sw"><i style="background:linear-gradient(180deg,#D6EAF5,#7FB3D5 55%,#2E6F9E)"></i><div><b>바다</b>--sea #1F5F8B</div></div>
+   </div>
+  </div>
+  <div class="panel"><h3>글꼴 <span class="sub">— 크롬북 기준. 전자칠판 화면은 화면 너비에 비례해 커져요</span></h3>
+   <div class="type-scale">
+    <div><code>제목 L · Jua 26~28px</code><span style="font-family:var(--f-title);font-size:27px">개구리가 모두 사라졌어요</span></div>
+    <div><code>제목 M · Jua 20px</code><span style="font-family:var(--f-title);font-size:20px">탐험대원의 예측</span></div>
+    <div><code>본문 · Noto Sans KR 16~17px</code><span style="font-size:16px">메뚜기를 먹는 개구리가 사라졌기 때문이에요.</span></div>
+    <div><code>보조 · Noto Sans KR 14px</code><span class="sub">끌어서 넣거나, 카드를 누른 다음 바구니를 눌러도 돼요.</span></div>
+    <div><code>전자칠판 제목 · Jua 2.8cqw (1920px에서 54px)</code><span style="font-family:var(--f-title);font-size:34px">큰입배스가 강에 들어왔어요</span></div>
+   </div>
+  </div>
+  <div class="panel"><h3>컴포넌트</h3>
+   <div class="comp-row">
+    <button class="btn">기본 버튼</button><button class="btn gold">강조 버튼</button><button class="btn ghost">보조 버튼</button>
+    <span class="role producer">생산자</span><span class="role consumer">소비자</span><span class="role decomposer">분해자</span>
+    <span class="chg up">▲ 136</span><span class="chg down">▼ 84</span><span class="chg same">● 97</span><span class="chg gone">✕ 사라짐</span>
+    <span class="pill gold">⭐ 별 9개</span><span class="pill navy">👤 4-2-13</span><span class="tb-tag">교과서 49쪽</span>
+   </div>
+  </div>
+ </div>
+</section>
+
+</div></div>
+</div>
+
+<script>
+(function(){
+ /* ── 숲: 교과서 49쪽 먹이그물 ── */
+ var R={producer:'#3F9A4E',consumer:'#E07B39',decomposer:'#8B6B4E'};
+ var N={
+  grass:{n:'풀',e:'🌿',r:'producer',x:150,y:470}, clover:{n:'토끼풀',e:'☘️',r:'producer',x:380,y:470},
+  cornus:{n:'산수유',e:'🍒',r:'producer',x:560,y:470}, acorn:{n:'도토리',e:'🌰',r:'producer',x:720,y:470},
+  hopper:{n:'메뚜기',e:'🦗',r:'consumer',x:170,y:365}, rabbit:{n:'토끼',e:'🐇',r:'consumer',x:330,y:365},
+  cater:{n:'애벌레',e:'🐛',r:'consumer',x:500,y:365}, squir:{n:'다람쥐',e:'🐿️',r:'consumer',x:700,y:365},
+  frog:{n:'개구리',e:'🐸',r:'consumer',x:330,y:260}, bulbul:{n:'직박구리',e:'🐦',r:'consumer',x:590,y:260},
+  duck:{n:'오리',e:'🦆',r:'consumer',x:50,y:160}, snake:{n:'뱀',e:'🐍',r:'consumer',x:410,y:160},
+  weasel:{n:'족제비',e:'🦦',r:'consumer',x:200,y:60}, hawk:{n:'매',e:'🦅',r:'consumer',x:600,y:60},
+  mush:{n:'버섯',e:'🍄',r:'decomposer',x:845,y:470}, mold:{n:'곰팡이',e:'🧫',r:'decomposer',x:922,y:470}
+ };
+ // 먹히는 생물 → 먹는 생물 (교과서 49쪽 판독, PRD 5.4)
+ var E=[['grass','hopper'],['grass','rabbit'],['clover','rabbit'],['clover','cater'],['cornus','cater'],['acorn','squir'],
+  ['hopper','frog'],['cater','frog'],['cornus','bulbul'],['hopper','bulbul'],['cater','bulbul'],
+  ['grass','duck'],['clover','duck'],['hopper','duck'],['cater','duck'],['frog','duck'],
+  ['frog','snake'],['rabbit','snake'],['squir','snake'],['bulbul','snake'],
+  ['hopper','weasel'],['frog','weasel'],['rabbit','weasel'],['squir','weasel'],['bulbul','weasel'],['duck','weasel'],
+  ['frog','hawk'],['rabbit','hawk'],['squir','hawk'],['bulbul','hawk'],['duck','hawk'],['snake','hawk']];
+ var NS='http://www.w3.org/2000/svg';
+ function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+
+ function draw(svg,o){
+  o=o||{};svg.innerHTML='';
+  var defs=el('defs',{},svg);
+  ['#8D8574','#3F9A4E','#D1495B','#E3A81B','#DDD4C2','#8B6B4E'].forEach(function(c,i){
+   var m=el('marker',{id:svg.id+'m'+i,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
+   el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m)});
+  var mk={'':0,ok:1,bad:2,hint:3,dim:4,'flow-anim':3,decomp:5};
+  el('rect',{x:800,y:405,width:155,height:120,rx:14,fill:'#F7F0E6',stroke:'#E2D6BC','stroke-dasharray':'6 6'},svg);
+  var cap=el('text',{x:812,y:425,class:'cap'},svg);cap.textContent='분해자';
+  var edges=(o.edges||E.map(function(e){return {a:e[0],b:e[1],c:''}})).slice();
+  if(o.decomp){['grass','acorn','frog','rabbit','snake','hawk','duck'].forEach(function(s){edges.push({a:s,b:'mush',c:'decomp'})})}
+  edges.forEach(function(ed){
+   var a=N[ed.a],b=N[ed.b];if(!a||!b)return;
+   var dx=b.x-a.x,dy=b.y-a.y,L=Math.sqrt(dx*dx+dy*dy),r=36;
+   el('line',{x1:a.x+dx/L*r,y1:a.y+dy/L*r,x2:b.x-dx/L*(r+4),y2:b.y-dy/L*(r+4),class:'edge '+ed.c,'marker-end':'url(#'+svg.id+'m'+(mk[ed.c]||0)+')'},svg)});
+  Object.keys(N).forEach(function(k){
+   var d=N[k],st=(o.state||{})[k]||'';
+   var g=el('g',{class:'node '+st,transform:'translate('+d.x+','+d.y+')'},svg);
+   el('circle',{class:'ring',r:40},g);
+   el('circle',{class:'bg',r:32,stroke:R[d.r]},g);
+   el('text',{class:'emo',y:1},g).textContent=d.e;
+   el('text',{class:'nm',y:50},g).textContent=d.n;
+   if(o.badge&&o.badge[k]){var bv=o.badge[k],up=bv[0]==='▲';
+    var bg=el('g',{transform:'translate(20,-30)'},g);
+    el('rect',{x:-2,y:-12,width:bv.length*9+10,height:22,rx:7,fill:up?'#1F8A70':'#D1495B'},bg);
+    var bt=el('text',{x:4,y:4,fill:'#fff','font-size':13,'font-weight':700},bg);bt.textContent=bv}
+  });
+ }
+
+ /* 03 만들기: 일부 연결, 방향 오류 1개, 힌트 1개, 아직 놓지 않은 카드 */
+ var GH={hawk:1,weasel:1,mush:1,mold:1};
+ var built=E.filter(function(e,i){return i<20&&!GH[e[0]]&&!GH[e[1]]&&!(e[0]==='hopper'&&e[1]==='frog')}).map(function(e){return {a:e[0],b:e[1],c:'ok'}});
+ document.getElementById('buildCount').textContent=built.length+' / '+E.length;
+ document.getElementById('buildMeter').style.width=Math.round(built.length/E.length*100)+'%';
+ built.push({a:'frog',b:'hopper',c:'bad'});
+ built.push({a:'cater',b:'frog',c:'hint'});
+ var buildState={hawk:'ghost',weasel:'ghost',mush:'ghost',mold:'ghost',grass:'pick'};
+ function drawBuild(dec){draw(document.getElementById('webBuild'),{edges:built,state:buildState,decomp:dec})}
+ drawBuild(false);
+ var sw=document.getElementById('decompSwitch');
+ sw.onclick=function(){var on=!sw.classList.contains('on');sw.classList.toggle('on',on);sw.setAttribute('aria-pressed',on);
+  buildState.mush=on?'':'ghost';drawBuild(on)};
+
+ /* 04 예측: 개구리 깜빡임 */
+ draw(document.getElementById('webPredict'),{state:{frog:'hot'}});
+
+ /* 05 관찰: 시뮬레이션 재생 (0~8년) */
+ var SIM={
+  frog:[100,0,0,0,0,0,0,0,0], hopper:[100,112,124,132,136,138,137,136,136], cater:[100,108,115,119,121,122,121,121,121],
+  grass:[100,99,95,90,87,85,84,84,84], clover:[100,99,97,95,93,92,91,91,92], cornus:[100,100,98,96,95,94,94,94,94],
+  bulbul:[100,103,107,110,112,113,113,112,112], duck:[100,94,90,89,89,90,91,92,92], snake:[100,95,91,88,87,86,87,87,88],
+  rabbit:[100,100,98,96,94,93,93,93,93], weasel:[100,98,96,95,95,95,96,96,96], hawk:[100,99,97,96,96,96,97,97,97]
+ };
+ var ORDER=['frog','hopper','cater','grass','clover','bulbul','duck','snake','rabbit','cornus','weasel','hawk'];
+ var FLOW=[[],[['frog','duck'],['frog','snake']],[['hopper','frog'],['cater','frog']],[['grass','hopper']],[['hopper','bulbul'],['cater','bulbul']],[['clover','cater']],[['cater','duck'],['hopper','duck']],[],[]];
+ var NOTE=['▶ 재생을 눌러 해마다 무슨 일이 일어나는지 관찰해 보세요.','1년: 개구리가 사라졌어요. 개구리를 먹던 오리와 뱀은 어떻게 될까요?','2년: 메뚜기와 애벌레가 늘기 시작했어요. 자기를 먹던 개구리가 없어졌기 때문이에요.',
+  '3년: 메뚜기가 늘자 풀이 줄기 시작했어요. 개구리와 이어지지 않은 풀까지 영향을 받았어요!','4년: 직박구리는 먹이(메뚜기·애벌레)가 늘어서 조금 늘었어요.','5년: 애벌레가 늘어 토끼풀도 조금 줄었어요.',
+  '6년: 오리는 개구리 대신 메뚜기와 애벌레를 더 먹고 있어요.','7년: 변화가 점점 느려지고 있어요.','8년: 관찰 끝! 탐구 보고서에서 내 예측과 비교해 봐요.'];
+ var bars=document.getElementById('bars'),turnsEl=document.getElementById('turns'),T=0,timer=null;
+ ORDER.forEach(function(k){
+  var d=N[k],row=document.createElement('div');row.className='bar'+(k==='grass'||k==='hopper'?' hl':'');row.id='b-'+k;
+  row.innerHTML='<span class="e">'+d.e+'</span><span class="n">'+d.n+'</span><div class="track"><span class="fill" style="background:'+R[d.r]+'"></span><span class="base" style="left:'+(100/1.5)+'%"></span></div><span class="chg same">● 100</span>';
+  bars.appendChild(row)});
+ for(var i=0;i<=8;i++){var t=document.createElement('span');t.className='turn';t.textContent=i?i+'년':'처음';turnsEl.appendChild(t)}
+ function render(){
+  ORDER.forEach(function(k){
+   var v=SIM[k][T],row=document.getElementById('b-'+k);
+   row.querySelector('.fill').style.width=Math.min(100,v/1.5)+'%';
+   var c=row.querySelector('.chg');
+   if(v===0&&T>0){c.className='chg gone';c.textContent='✕ 0';return}
+   c.className='chg '+(v>110?'up':v<90?'down':'same');
+   c.textContent=(v>110?'▲ ':v<90?'▼ ':'● ')+v});
+  Array.prototype.forEach.call(turnsEl.children,function(t,i){t.className='turn'+(i<T?' done':i===T?' now':'')});
+  var fl=FLOW[T]||[],fk={};fl.forEach(function(f){fk[f[0]+'>'+f[1]]=1});
+  var badge={},state={};
+  if(T>0){state.frog='gone';ORDER.forEach(function(k){var v=SIM[k][T];if(k!=='frog'&&(v>110||v<90))badge[k]=(v>110?'▲':'▼')+v})}else state.frog='hot';
+  draw(document.getElementById('webObserve'),{edges:E.map(function(e){return {a:e[0],b:e[1],c:fk[e[0]+'>'+e[1]]?'flow-anim':(fl.length?'dim':'')}}),state:state,badge:badge});
+  document.getElementById('liveText').textContent=NOTE[T];
+ }
+ function stop(){clearInterval(timer);timer=null;document.getElementById('play').textContent='▶ 재생'}
+ document.getElementById('play').onclick=function(){
+  if(timer){stop();return}
+  if(T>=8)T=0;this.textContent='⏸ 멈춤';
+  timer=setInterval(function(){T++;render();if(T>=8)stop()},1100)};
+ document.getElementById('step').onclick=function(){stop();if(T<8){T++;render()}};
+ document.getElementById('reset').onclick=function(){stop();T=0;render()};
+ render();
+
+ /* 07 도감 */
+ var DEX=[['grass',1],['clover',1],['cornus',1],['acorn',1],['hopper',1],['rabbit',1],['cater',1],['squir',1],['frog',1],['bulbul',1],['duck',1],['snake',1],['weasel',0],['hawk',1,'rare'],['mush',0],['mold',0]];
+ var RN={producer:'생산자',consumer:'소비자',decomposer:'분해자'};
+ var grid=document.getElementById('dexGrid');
+ DEX.forEach(function(x){var d=N[x[0]],b=document.createElement('button');
+  b.className='sp-card'+(x[1]?'':' locked')+(x[2]?' rare':'')+(x[0]==='hawk'?' sel':'');b.style.setProperty('--c',R[d.r]);
+  b.innerHTML='<span class="pic">'+d.e+'</span><span class="t"><b>'+(x[1]?d.n:'???')+'</b><span class="role '+d.r+'">'+RN[d.r]+'</span></span>';grid.appendChild(b)});
+
+ /* 08 모둠 (답 가리기 켜짐: 고른 답은 공개 전까지 표시하지 않음) */
+ var G=[['1모둠','down',1],['2모둠','same',1],['3모둠','down',1],['4모둠','',0],['5모둠','up',1],['6모둠','',0]];
+ var ge=document.getElementById('groups');
+ G.forEach(function(g){var d=document.createElement('div');d.className='grp hide'+(g[2]?' done':'');
+  d.innerHTML='<span class="gn">'+g[0]+'</span><div class="ans">'+[['up','▲'],['down','▼'],['same','●']].map(function(a){return '<button class="'+a[0]+(g[1]===a[0]?' sel':'')+'" aria-label="'+g[0]+' '+a[0]+'">'+a[1]+'</button>'}).join('')+'</div><span class="st">'+(g[2]?'✔ 입력 완료':'토의 중…')+'</span>';ge.appendChild(d)});
+ ge.addEventListener('click',function(e){var b=e.target.closest('.ans button');if(!b)return;var p=b.parentNode;
+  Array.prototype.forEach.call(p.children,function(x){x.classList.remove('sel')});b.classList.add('sel');
+  var g=p.parentNode;g.classList.add('done');g.querySelector('.st').textContent='✔ 입력 완료'});
+
+ /* 선택형 버튼 공통 */
+ document.querySelectorAll('[data-group]').forEach(function(grp){grp.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b||b.disabled)return;
+  Array.prototype.forEach.call(grp.children,function(x){x.classList.remove('sel')});b.classList.add('sel')})});
+ document.querySelectorAll('.actions').forEach(function(grp){grp.addEventListener('click',function(e){
+  var b=e.target.closest('.act');if(!b||b.classList.contains('off'))return;Array.prototype.forEach.call(grp.children,function(x){x.classList.remove('sel')});b.classList.add('sel')})});
+
+ /* 탭 전환 + 기기 표시 */
+ var dev=document.getElementById('device'),lab=document.getElementById('devLabel');
+ var LAB_CB='<b>크롬북 1280×800 · 크롬</b><span>브라우저 창 안쪽 약 1280×690 기준. 핵심 조작은 스크롤 없이 보이게 배치</span>';
+ var LAB_BD='<b>전자칠판 1920×1080 · 엣지</b><span>16:9 화면. 글자와 버튼이 화면 너비에 비례해 커져요(윈도우 배율 100~150% 모두 대응)</span>';
+ function show(id){
+  if(!document.getElementById(id))id='main';
+  document.querySelectorAll('.screen').forEach(function(s){s.hidden=s.id!==id});
+  document.querySelectorAll('.mock-bar nav a').forEach(function(a){a.classList.toggle('on',a.dataset.tab===id)});
+  var board=id==='team';dev.classList.toggle('board-dev',board);lab.innerHTML=board?LAB_BD:LAB_CB;
+  dev.querySelector('.chrome').style.display=board?'none':'';
+  dev.querySelector('.app').scrollTop=0;
+  if(id!=='observe')stop();
+ }
+ document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){location.hash=b.dataset.go})});
+ window.addEventListener('hashchange',function(){show(location.hash.slice(1));window.scrollTo({top:0})});
+ show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>
