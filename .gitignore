@@ -45,3 +45,6 @@ desktop.ini
 
 # ── Claude Code / oh-my-claudecode 작업 상태 ──
 .omc/
+
+# ── 교과서 PDF ──
+*.pdf
