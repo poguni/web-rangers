@@ -2,12 +2,12 @@
 
 | 항목 | 내용 |
 |---|---|
-| 문서 버전 | v0.3 |
+| 문서 버전 | v0.4 |
 | 작성일 | 2026-10-19 |
 | 대상 PRD | `../prd-ecosystem-foodweb.md` (v0.5) 5.5절 |
 | 권장 도구 | Google Gemini 이미지 생성(나노바나나). 다른 도구도 같은 프롬프트로 쓸 수 있습니다. |
-| 필요한 그림 | 생물 41장(숲 16, 강 11, 바다 13, 외래종 1) + 분류 놀이용 3장 + 비생물 요소 4장 + 사건 18장 + 관리인 행동 6장 + 기타 6장 = **78장** |
-| 변경 | v0.2: 테마를 교과서 43~45쪽과 같은 숲·강·바다로 변경(논·갯벌 그림 삭제), 분류 놀이용 교과서 47쪽 생물 3장 추가 | / v0.3: 앱 이름 변경(먹이그물 탐험대)에 맞춰 마스코트를 어린이 탐험대원으로, 앱 아이콘에 나침반 추가
+| 필요한 그림 | 생물 42장(숲 16, 강 12, 바다 13, 외래종 1) + 분류 놀이용 3장 + 비생물 요소 4장 + 사건 18장 + 관리인 행동 6장 + 기타 6장 = **79장** |
+| 변경 | v0.2: 테마를 교과서 43~45쪽과 같은 숲·강·바다로 변경(논·갯벌 그림 삭제), 분류 놀이용 교과서 47쪽 생물 3장 추가 | / v0.3: 앱 이름 변경(먹이그물 탐험대)에 맞춰 마스코트를 어린이 탐험대원으로, 앱 아이콘에 나침반 추가 / v0.4: 강에 교과서 44쪽 물고기 송사리(`river-medaka`) 추가
 
 > 이 개발 환경에서는 이미지를 직접 만들 수 없어서, 생성 도구에 그대로 붙여 넣을 수 있는 프롬프트를 정리했습니다. 프롬프트는 영어로 쓰면 결과가 더 안정적이라 영어로 쓰고, 확인할 점은 한국어로 적었습니다.
 
@@ -83,7 +83,7 @@ FORMAT: Landscape 4:3, 1600 x 1200.
 | `forest-mushroom` | 버섯 | A small group of brown wild mushrooms growing from a mossy piece of fallen, decaying log, with visible gills under the caps. | 썩은 나무에서 자라는 모습(분해자) |
 | `forest-mold` | 곰팡이 | A fallen brown oak leaf partly covered with soft gray-green fuzzy mold, and a circular magnifying-lens inset at the upper right showing thin branching mold threads with round spore heads. | 확대 원 안에 실 모양 균사 |
 
-### 3.2 강 — 교과서 44쪽 (11장 + 외래종 1장)
+### 3.2 강 — 교과서 44쪽 (12장 + 외래종 1장)
 "추가"는 교과서에 없지만 먹이그물에 꼭 필요해 넣은 생물입니다.
 
 | 파일 이름 | 생물 | 프롬프트(주제) | 확인할 점 |
@@ -95,6 +95,7 @@ FORMAT: Landscape 4:3, 1600 x 1200.
 | `river-melania` | 다슬기 | Two freshwater snails (Semisulcospira libertina), Korean "다슬기", on a smooth stream stone: tall narrow cone-shaped dark brown to black spiral shells, body and tentacles out. | 길쭉한 원뿔 모양 짙은 껍데기 |
 | `river-nymph` | 잠자리 애벌레(추가) | A dragonfly nymph (larva) under water on a stone: stout brownish body, six legs, large eyes, short wing pads on the back, no wings. | 날개 없음, 다리 6개 |
 | `river-crucian` | 붕어(추가) | A crucian carp (Carassius auratus), Korean "붕어": deep, rounded body, silvery olive-gold scales, no whiskers (barbels), forked tail. | 입수염 없음(잉어와 구별) |
+| `river-medaka` | 송사리 | A small group of Japanese rice fish (Oryzias latipes), Korean "송사리", swimming near the water surface: tiny slender translucent pale olive-brown bodies, large eyes on top of the head, upturned mouth, dorsal fin set far back near the tail. | 몸길이 3~4cm의 작은 물고기, 등지느러미가 꼬리 쪽에 있음, 큰 눈 |
 | `river-duck` | 오리 | (숲 `forest-duck` 그림을 그대로 써도 됩니다.) Eastern spot-billed duck swimming on a calm river. | 숲 오리와 같은 종 |
 | `river-heron` | 왜가리 | A grey heron (Ardea cinerea) standing in shallow water: gray back and wings, white head and neck with a black stripe from eye to a black crest plume, long yellow dagger-like bill, long legs. | 머리의 검은 줄과 댕기, 노란 부리 |
 | `river-falcon` | 매 | (숲 `forest-falcon` 그림을 그대로 써도 됩니다.) | 숲 매와 같은 종 |

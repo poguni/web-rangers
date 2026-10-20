@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import type { Theme } from "./data/types";
 import { BuildScreen } from "./screens/BuildScreen";
+import { CardsScreen } from "./screens/CardsScreen";
 import { DiagnosticScreen } from "./screens/DiagnosticScreen";
 import { GuideScreen } from "./screens/GuideScreen";
 import { InvestigateScreen } from "./screens/InvestigateScreen";
@@ -17,10 +19,13 @@ import { useProgress } from "./store/progress";
 export type Route =
   | ""
   | "sort"
+  | "sort/abiotic"
   | "tutorial"
   | "build"
   | "stages"
   | "lab"
+  | "cards"
+  | `${"build" | "stages" | "lab"}/${Theme}`
   | "diag"
   | "diag/pre"
   | "diag/post"
@@ -58,17 +63,25 @@ export function App() {
     const id = route.slice("stage/".length);
     return <InvestigateScreen key={id} stageId={id} go={go} />;
   }
+  // build·stages·lab 뒤에 테마(없으면 숲): #/build/river
+  const [screen, arg] = route.split("/");
+  const theme: Theme = arg === "river" || arg === "sea" ? arg : "forest";
+  switch (screen) {
+    case "build":
+      return <BuildScreen key={theme} theme={theme} go={go} />;
+    case "stages":
+      return <StageSelectScreen key={theme} theme={theme} go={go} />;
+    case "lab":
+      return <LabScreen key={theme} theme={theme} go={go} />;
+  }
   switch (route) {
     case "sort":
-      return <SortScreen go={go} />;
+    case "sort/abiotic":
+      return <SortScreen key={route} kind={route === "sort" ? "role" : "abiotic"} go={go} />;
     case "tutorial":
       return <TutorialScreen go={go} />;
-    case "build":
-      return <BuildScreen go={go} />;
-    case "stages":
-      return <StageSelectScreen go={go} />;
-    case "lab":
-      return <LabScreen go={go} />;
+    case "cards":
+      return <CardsScreen go={go} />;
     case "diag":
     case "diag/pre":
     case "diag/post":

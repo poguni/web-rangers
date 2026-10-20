@@ -5,7 +5,7 @@ import { AppBar, Toast } from "../components/common";
 import { FoodWebBoard } from "../components/FoodWebBoard";
 import { webAt } from "../components/observe";
 import { forestChain } from "../data/forest";
-import type { EventCard } from "../data/types";
+import type { EventCard, Theme } from "../data/types";
 import type { Model } from "../engine/calibrate";
 import { explainAll } from "../engine/explain";
 import { runScenario, type Scenario } from "../engine/run";
@@ -24,11 +24,9 @@ const PERIODS = [4, 8, 16];
 const LINE_COLORS = ["#24466B", "#D1495B", "#1F8A70", "#8A5E00", "#7A4FA0", "#3F86A0"];
 const MAX_LINES = 6;
 
-const theme = THEMES.forest!;
-
-function opEvent(id: string, op: Op): EventCard {
+function opEvent(theme: Theme, id: string, op: Op): EventCard {
   const amount = OPS.find((o) => o[0] === op)![3];
-  return { id: `lab.${op}.${id}`, theme: "forest", title: "", story: "", type: op, targets: [id], amount, image: "", because: "실험으로" };
+  return { id: `lab.${op}.${id}`, theme, title: "", story: "", type: op, targets: [id], amount, image: "", because: "실험으로" };
 }
 
 interface Result {
@@ -38,9 +36,9 @@ interface Result {
   skipped: string[]; // 먹이사슬에 없어 비교에서 빠진 것
 }
 
-export function LabScreen({ go }: { go: (r: Route) => void }) {
-  const model = modelFor("forest");
-  const chainModel = modelFor("forest", forestChain);
+export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route) => void }) {
+  const theme = THEMES[themeId];
+  const canCompare = themeId === "forest"; // 교과서 먹이사슬(풀 → 메뚜기 → 개구리)이 있는 숲만 비교
   const svgRef = useRef<SVGSVGElement>(null);
   const [ops, setOps] = useState<Record<string, Op>>({});
   const [selected, setSelected] = useState<string | null>(null);
@@ -50,14 +48,16 @@ export function LabScreen({ go }: { go: (r: Route) => void }) {
   const [result, setResult] = useState<Result | null>(null);
 
   const event = theme.events.find((e) => e.id === eventId);
+  const model = modelFor(themeId, undefined, event ? [event] : []); // 외래종 사건이면 외래종을 넣은 모델
+  const chainModel = modelFor("forest", forestChain);
   const sp = (id: string) => model.species[model.index[id]];
 
   function run() {
-    const events = [...Object.entries(ops).map(([id, op]) => opEvent(id, op)), ...(event ? [event] : [])];
+    const events = [...Object.entries(ops).map(([id, op]) => opEvent(themeId, id, op)), ...(event ? [event] : [])];
     const web = runScenario(model, years, events.map((e) => ({ atYear: 0, event: e })));
     let chain: Scenario | undefined;
     const skipped: string[] = [];
-    if (compare) {
+    if (compare && canCompare) {
       const inChain = (e: EventCard) => e.targets.every((t) => t.startsWith("role:") || forestChain.includes(t));
       const usable = events.filter((e) => inChain(e) && (e.type !== "decomposer" || chainModel.decomposers.length > 0));
       skipped.push(...events.filter((e) => !usable.includes(e)).map((e) => (e.title || sp(e.targets[0]).name)));
@@ -89,7 +89,7 @@ export function LabScreen({ go }: { go: (r: Route) => void }) {
 
   return (
     <div className="screen">
-      <AppBar crumb="숲 › 자유 실험실" onExit={() => go("")} />
+      <AppBar crumb={`${theme.name} › 자유 실험실`} onExit={() => go("")} />
       <main className="body">
         <div className="toolbar">
           <span className="seg" role="group" aria-label="관찰 기간">
@@ -99,7 +99,10 @@ export function LabScreen({ go }: { go: (r: Route) => void }) {
               </button>
             ))}
           </span>
-          <select className="sel" aria-label="사건 고르기" value={eventId} onChange={(e) => setEventId(e.target.value)}>
+          <select className="sel" aria-label="사건 고르기" value={eventId} onChange={(e) => {
+              setEventId(e.target.value);
+              setResult(null); // 외래종 사건이면 모델이 바뀌므로 이전 결과를 지움
+            }}>
             <option value="">사건 없음</option>
             {theme.events.map((e) => (
               <option key={e.id} value={e.id}>
@@ -107,10 +110,12 @@ export function LabScreen({ go }: { go: (r: Route) => void }) {
               </option>
             ))}
           </select>
-          <span className="toggle">
-            먹이사슬과 비교
-            <button className={`switch${compare ? " on" : ""}`} style={compare ? { background: "var(--navy)" } : undefined} aria-pressed={compare} aria-label="먹이사슬과 비교" onClick={() => setCompare((v) => !v)} />
-          </span>
+          {canCompare && (
+            <span className="toggle">
+              먹이사슬과 비교
+              <button className={`switch${compare ? " on" : ""}`} style={compare ? { background: "var(--navy)" } : undefined} aria-pressed={compare} aria-label="먹이사슬과 비교" onClick={() => setCompare((v) => !v)} />
+            </span>
+          )}
           <span className="sp" style={{ flex: 1 }} />
           <button className="btn ghost sm" onClick={reset}>
             ↺ 처음부터
@@ -122,7 +127,7 @@ export function LabScreen({ go }: { go: (r: Route) => void }) {
 
         <div className="lab">
           <div className="canvas">
-            <FoodWebBoard svgRef={svgRef} label="실험할 생물을 고르는 숲 먹이그물" nodes={shownNodes} edges={edges} onNodeTap={(id) => setSelected((s) => (s === id ? null : id))} />
+            <FoodWebBoard svgRef={svgRef} label={`실험할 생물을 고르는 ${theme.name} 먹이그물`} nodes={shownNodes} edges={edges} onNodeTap={(id) => setSelected((s) => (s === id ? null : id))} />
             <div className="op-menu" role="group" aria-label="고른 생물 바꾸기">
               {selected ? (
                 <>

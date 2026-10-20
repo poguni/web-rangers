@@ -7,6 +7,11 @@ import type { SimState } from "./simulate";
 const REINTRODUCE = 0.3; // 되살리면 30
 export const PROTECT_YEARS = 4;
 const PROTECT = -0.1; // 보호 구역: 1년 사망률을 이만큼 낮춤
+const CATCH = 0.5; // 외래종 잡기: 절반으로(PRD 5.3, 2번 써야 거의 사라짐)
+
+/** 사건으로 생긴 오염(사망 증가) 효과: 관리인 행동(보호 구역)으로 생긴 효과는 빼고 */
+const pollution = (state: SimState) =>
+  state.effects.filter((ef) => ef.kind === "mortality" && !ef.eventId.startsWith("action:") && state.year < ef.untilYear);
 
 /** 지금 쓸 수 없는 행동이면 그 까닭(DESIGN 7.9: "지금은 가뭄이 아니라 필요 없어요") */
 export function unavailableReason(model: Model, state: SimState, action: ActionCard): string | null {
@@ -20,8 +25,9 @@ export function unavailableReason(model: Model, state: SimState, action: ActionC
     case "protect":
       return null;
     case "remove-invasive":
+      return model.invaders.some((i) => state.N[i] > 0) ? null : "지금은 외래종이 없어 필요 없어요.";
     case "clean":
-      return "강·바다 테마에서 쓸 수 있어요.";
+      return pollution(state).length > 0 ? null : "지금은 치울 오염이 없어 필요 없어요.";
   }
 }
 
@@ -51,8 +57,14 @@ export function applyAction(model: Model, state: SimState, action: ActionCard, a
         ...state,
         effects: state.effects.map((ef) => (ef.kind === "abiotic" ? { ...ef, untilYear: Math.min(ef.untilYear, state.year) } : ef)),
       };
-    case "remove-invasive":
-    case "clean":
-      throw new Error("강·바다 테마(M5)에서 구현해요");
+    case "remove-invasive": {
+      const N = state.N.slice();
+      for (const i of model.invaders) N[i] *= CATCH;
+      return { ...state, N };
+    }
+    case "clean": {
+      const ended = new Set(pollution(state));
+      return { ...state, effects: state.effects.map((ef) => (ended.has(ef) ? { ...ef, untilYear: Math.min(ef.untilYear, state.year) } : ef)) };
+    }
   }
 }

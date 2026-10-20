@@ -1,16 +1,18 @@
-// 사건 탐구 스테이지 고르기(숲 5개)
+// 사건 탐구 스테이지 고르기(숲 5개, 강·바다 각 3개)
 import type { Route } from "../App";
 import { AppBar, Pic, starText } from "../components/common";
-import { forestStages } from "../data/stages";
+import { allStages } from "../data/stages";
+import type { Theme } from "../data/types";
 import { THEMES } from "../game/stage";
 import { useStudent } from "../store/progress";
 
-export function StageSelectScreen({ go }: { go: (r: Route) => void }) {
+export function StageSelectScreen({ theme, go }: { theme: Theme; go: (r: Route) => void }) {
   const results = useStudent().stages;
-  const total = forestStages.reduce((sum, s) => sum + (results[s.id]?.stars ?? 0), 0);
+  const stages = allStages.filter((s) => s.theme === theme);
+  const total = stages.reduce((sum, s) => sum + (results[s.id]?.stars ?? 0), 0);
   return (
     <div className="screen">
-      <AppBar crumb="숲 › 사건 탐구" onExit={() => go("")}>
+      <AppBar crumb={`${THEMES[theme].name} › 사건 탐구`} onExit={() => go("")}>
         <span className="pill gold">⭐ 별 {total}개</span>
       </AppBar>
       <main className="body">
@@ -19,8 +21,8 @@ export function StageSelectScreen({ go }: { go: (r: Route) => void }) {
           <div className="sub">사건이 일어나면 무엇이 달라질지 먼저 예측하고, 8년 동안 지켜봐요.</div>
         </div>
         <div className="stage-list">
-          {forestStages.map((s) => {
-            const event = THEMES[s.theme]!.events.find((e) => e.id === s.eventId)!;
+          {stages.map((s) => {
+            const event = THEMES[s.theme].events.find((e) => e.id === s.eventId)!;
             const stars = results[s.id]?.stars ?? 0;
             return (
               <button key={s.id} className="stage-card" onClick={() => go(`stage/${s.id}`)}>

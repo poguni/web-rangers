@@ -4,7 +4,7 @@ import { needsReview, sortedStudents, studentRow, summary, toCsv } from "../../s
 import type { StudentRecord } from "../../src/store/progress";
 
 const at = "2026-10-20T01:30:00.000Z";
-const rec = (key: string, extra: Partial<StudentRecord> = {}): StudentRecord => ({ key, stages: {}, predictions: [], diagnostic: {}, ...extra });
+const rec = (key: string, extra: Partial<StudentRecord> = {}): StudentRecord => ({ key, cards: [], streak: 0, stages: {}, predictions: [], diagnostic: {}, ...extra });
 
 const students: Record<string, StudentRecord> = {
   "4-2-13": rec("4-2-13", {
@@ -51,6 +51,7 @@ describe("교사 결과", () => {
     expect(lines[1].startsWith("4,2,2,다람쥐,생산자,")).toBe(true);
     expect(lines[2]).toContain('"갈매기가 없어지면 게가 많아져서, ""미역""이 줄어요"');
     expect(lines[2]).toContain("물,분해자,🌿 미역 → 🦀 게");
-    expect(lines[2].endsWith(",3,,,,,2,3")).toBe(true); // 숲1 별 3, 나머지 빈칸, 예측 2/3
+    expect(lines[0]).toContain("숲5별,강1별,강2별,강3별,바다1별,바다2별,바다3별");
+    expect(lines[2].endsWith(",3,,,,,,,,,,,2,3")).toBe(true); // 숲1 별 3, 나머지 10칸 빈칸, 예측 2/3
   });
 });

@@ -33,6 +33,8 @@ export interface Model {
   producers: number[];
   consumers: number[];
   decomposers: number[];
+  /** 외래종: 처음에는 없고(0) 사건으로 들어옴. 균형 계산에서 빼서 들어오기 전 먹이그물을 흔들지 않음 */
+  invaders: number[];
   /** a[i][j]: 소비자 j가 생물 i를 먹는 계수 */
   a: number[][];
   r: number[]; // 생산자 성장률
@@ -57,6 +59,7 @@ export function calibrate(species: Species[], params: Params = DEFAULT_PARAMS): 
   const producers = byRole("producer");
   const consumers = byRole("consumer");
   const decomposers = byRole("decomposer");
+  const invaders = species.flatMap((s, i) => (s.tags?.includes("invasive") ? [i] : []));
 
   // 나를 먹는 소비자 목록
   const predators: { j: number; preference: number }[][] = species.map(() => []);
@@ -66,7 +69,7 @@ export function calibrate(species: Species[], params: Params = DEFAULT_PARAMS): 
     for (const p of s.prey) {
       const i = index[p.id];
       if (i === undefined) throw new CalibrationError(`${s.name}: 없는 먹이 ${p.id}`);
-      predators[i].push({ j, preference: p.preference });
+      if (!invaders.includes(j)) predators[i].push({ j, preference: p.preference });
     }
   }
 
@@ -108,7 +111,7 @@ export function calibrate(species: Species[], params: Params = DEFAULT_PARAMS): 
     K[i] = 1 / (1 - G / r[i]);
   }
   for (const j of consumers) {
-    const turnover = e * intakeOf(j) - eaten[j]; // 균형 상태의 사망 몫 d_j
+    const turnover = e * intakeOf(j) - eaten[j]; // 균형 상태의 사망 몫 d_j (외래종은 먹히는 양이 0인 맨 위 소비자처럼)
     q[j] = crowding * turnover;
     m[j] = turnover - q[j];
     if (m[j] <= 0) throw new CalibrationError(`${species[j].name}: 사망률이 0 이하예요`);
@@ -119,7 +122,7 @@ export function calibrate(species: Species[], params: Params = DEFAULT_PARAMS): 
   if (decomposers.length > 0) {
     let deathAtRest = 0;
     for (const i of producers) deathAtRest += r[i] / K[i];
-    for (const j of consumers) deathAtRest += m[j] + q[j];
+    for (const j of consumers) if (!invaders.includes(j)) deathAtRest += m[j] + q[j];
     for (const d of decomposers) {
       b[d] = deathAtRest / decomposers.length;
       q[d] = crowding * params.decomposerEfficiency * b[d];
@@ -143,6 +146,7 @@ export function calibrate(species: Species[], params: Params = DEFAULT_PARAMS): 
     producers,
     consumers,
     decomposers,
+    invaders,
     a,
     r,
     K,

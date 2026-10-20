@@ -3,11 +3,11 @@ import { useState, type ReactNode } from "react";
 import type { Route } from "../App";
 import { AppBar } from "../components/common";
 import { DIAG_MAX } from "../data/diagnostic";
-import { forestStages } from "../data/stages";
+import { allStages } from "../data/stages";
 import { needsReview, sortedStudents, studentRow, summary, toCsv } from "../game/results";
 import { useTeam } from "../game/team";
 import { useProgress } from "../store/progress";
-import { checkPin, hasPin, isUnlocked, setPin, setUnlocked } from "../store/settings";
+import { allCardsOpen, checkPin, hasPin, isUnlocked, setAllCardsOpen, setPin, setUnlocked } from "../store/settings";
 
 /** 교사 메뉴 잠금: 처음이면 PIN 정하기, 다음부터 PIN 넣기 */
 export function TeacherGate({ go, children }: { go: (r: Route) => void; children: ReactNode }) {
@@ -98,6 +98,7 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
   const clearAll = useProgress((s) => s.clearAll);
   const resetTeam = useTeam((s) => s.reset);
   const [confirm, setConfirm] = useState(0);
+  const [cardsOpen, setCardsOpen] = useState(allCardsOpen);
   const rows = sortedStudents(students).map(studentRow);
   const sum = summary(rows);
   const review = needsReview(rows);
@@ -122,6 +123,16 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
         </button>
         <button className="btn ghost sm" onClick={() => go("guide")}>
           📘 교사 가이드
+        </button>
+        <button
+          className="btn ghost sm"
+          aria-pressed={cardsOpen}
+          onClick={() => {
+            setAllCardsOpen(!cardsOpen);
+            setCardsOpen(!cardsOpen);
+          }}
+        >
+          {cardsOpen ? "🔒 카드 다시 닫기" : "🔓 카드 모두 열기"}
         </button>
         <button className="btn sm" disabled={rows.length === 0} onClick={exportCsv}>
           ⬇ CSV 내보내기
@@ -187,7 +198,7 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
                     </td>
                     <td className="why">{r.why ? `"${r.why}"` : <span className="sub">-</span>}</td>
                     <td>
-                      {r.stagesDone} / {forestStages.length} · ★{r.stars}
+                      {r.stagesDone} / {allStages.length} · ★{r.stars}
                     </td>
                     <td>{r.predictTotal ? pct(r.predictCorrect / r.predictTotal) : "-"}</td>
                   </tr>

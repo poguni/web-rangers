@@ -1,6 +1,7 @@
 // F10-2·F10-3 교사 결과: 학생별 요약과 CSV(여러 기기의 CSV를 이어 붙이면 학급 전체가 되는 형식)
 import { answerText, DIAGNOSTIC, INDIRECT_ITEM, isCorrect, WHY_ITEM, type DiagKind } from "../data/diagnostic";
-import { forestStages } from "../data/stages";
+import { allStages } from "../data/stages";
+import { THEMES } from "./stage";
 import { GUEST, type StudentRecord } from "../store/progress";
 
 /** 학년-반-번호 순서(손님 기록은 번호가 없어 결과에 넣지 않음) */
@@ -84,7 +85,7 @@ export function toCsv(students: Record<string, StudentRecord>): string {
     "번호",
     ...diagCols("pre", "사전"),
     ...diagCols("post", "사후"),
-    ...forestStages.map((s) => `숲${s.number}별`),
+    ...allStages.map((s) => `${THEMES[s.theme].name}${s.number}별`),
     "예측맞힘",
     "예측전체",
   ];
@@ -98,7 +99,7 @@ export function toCsv(students: Record<string, StudentRecord>): string {
       ...r.key.split("-"),
       ...diag("pre"),
       ...diag("post"),
-      ...forestStages.map((s) => r.stages[s.id]?.stars),
+      ...allStages.map((s) => r.stages[s.id]?.stars),
       row.predictCorrect,
       row.predictTotal,
     ]

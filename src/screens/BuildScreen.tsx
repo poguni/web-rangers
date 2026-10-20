@@ -1,9 +1,9 @@
-// 03 먹이그물 만들기(F3): 숲 생물 14종을 판에 놓고 화살표 32개(교과서 49쪽) 잇기
+// 03 먹이그물 만들기(F3): 테마 생물을 판에 놓고 화살표 잇기(숲은 교과서 49쪽 32개)
 import { useRef, useState, type CSSProperties } from "react";
 import type { Route } from "../App";
-import { AppBar, Pic, RoleBadge, starText, Toast, type ToastMessage } from "../components/common";
+import { AppBar, Pic, RewardNote, RoleBadge, starText, Toast, type ToastMessage } from "../components/common";
 import { clientToBoard, FoodWebBoard, type BoardEdge, type BoardNode } from "../components/FoodWebBoard";
-import { forestLayout, forestSpecies } from "../data/forest";
+import type { Theme } from "../data/types";
 import {
   completionTarget,
   findFreeSpot,
@@ -15,16 +15,11 @@ import {
   type Point,
   type Relation,
 } from "../game/build";
+import { REWARD } from "../game/cards";
+import { THEMES } from "../game/stage";
 import { useCardDrag } from "../hooks/useCardDrag";
+import { useProgress } from "../store/progress";
 import { josa } from "../utils/korean";
-
-const species = forestSpecies;
-const byId = new Map(species.map((s) => [s.id, s]));
-const TOTAL = relationsOf(species).length;
-const GOAL = completionTarget(TOTAL);
-// F3-6: 생산자 카드가 보관함 맨 위(교과서 48쪽 "생산자 카드부터 시작")
-const trayOrder = species.filter((s) => s.role !== "decomposer").sort((a, b) => (a.layer ?? 0) - (b.layer ?? 0));
-const decomposers = species.filter((s) => s.role === "decomposer");
 
 const START: ToastMessage = {
   kind: "info",
@@ -32,7 +27,16 @@ const START: ToastMessage = {
   text: "스스로 양분을 만드는 생물부터 시작해요.",
 };
 
-export function BuildScreen({ go }: { go: (r: Route) => void }) {
+export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => void }) {
+  const { name, species, layout } = THEMES[theme];
+  const byId = new Map(species.map((s) => [s.id, s]));
+  const TOTAL = relationsOf(species).length;
+  const GOAL = completionTarget(TOTAL);
+  // F3-6: 생산자 카드가 보관함 맨 위(교과서 48쪽 "생산자 카드부터 시작")
+  const trayOrder = species.filter((s) => s.role !== "decomposer").sort((a, b) => (a.layer ?? 0) - (b.layer ?? 0));
+  const decomposers = species.filter((s) => s.role === "decomposer");
+  const grant = useProgress((s) => s.grant);
+  const [reward, setReward] = useState<string[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
   const [placed, setPlaced] = useState<Record<string, Point>>({});
   const [linked, setLinked] = useState<Set<string>>(new Set());
@@ -80,11 +84,12 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
       setLinked(next);
       setFresh(key);
       if (hint?.from === from && hint.to === to) setHint(null);
-      if (next.size === TOTAL) setToast({ kind: "ok", title: `화살표 ${TOTAL}개를 모두 찾았어요!`, text: "숲의 먹고 먹히는 관계를 모두 이었어요." });
+      if (next.size === TOTAL) setToast({ kind: "ok", title: `화살표 ${TOTAL}개를 모두 찾았어요!`, text: `${name}의 먹고 먹히는 관계를 모두 이었어요.` });
       else setToast({ kind: "ok", title: `맞아요! ${a.name} → ${b.name}`, text: `${josa(b.name, "은/는")} ${josa(a.name, "을/를")} 먹어요.` });
       if (next.size >= GOAL && !doneShown.current) {
         doneShown.current = true;
         setDoneOpen(true);
+        setReward(grant({ theme, n: REWARD.build }));
       }
     } else if (r.kind === "already") {
       setToast({ kind: "info", title: "이미 이은 화살표예요." });
@@ -116,7 +121,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
   }
 
   function arrange() {
-    setPlaced((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, forestLayout[id]])));
+    setPlaced((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, layout[id]])));
     setToast({ kind: "info", title: "정리했어요.", text: "먹히는 생물은 아래, 먹는 생물은 위에 있어요." });
   }
 
@@ -131,7 +136,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
       name: s.name,
       image: s.image,
       role: s.role,
-      ...forestLayout[s.id],
+      ...layout[s.id],
       state: showDecomp ? undefined : ("ghost" as const),
     })),
   ];
@@ -150,7 +155,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
   return (
     <div className="screen">
       <AppBar
-        crumb="숲 › 먹이그물 만들기"
+        crumb={`${name} › 먹이그물 만들기`}
         onExit={() => go("")}
       >
         <span className="pill gold" aria-label={`이번 판 별 ${stars}개`}>
@@ -224,7 +229,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
           <div className="canvas">
             <FoodWebBoard
               svgRef={svgRef}
-              label="숲 먹이그물 만들기 판"
+              label={`${name} 먹이그물 만들기 판`}
               nodes={nodes}
               edges={edges}
               onLink={onLink}
@@ -243,6 +248,7 @@ export function BuildScreen({ go }: { go: (r: Route) => void }) {
                     {linked.size < TOTAL && ` ${TOTAL - linked.size}개를 더 찾아볼 수 있어요.`}
                   </div>
                   <div className="sub">여러 먹이사슬이 그물처럼 얽혀 있어요.</div>
+                  <RewardNote ids={reward} />
                   <div className="row">
                     <button className="btn gold" onClick={() => setDoneOpen(false)}>
                       더 찾아보기

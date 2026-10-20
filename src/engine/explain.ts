@@ -48,6 +48,7 @@ function causeText(model: Model, scenario: Scenario, i: number, c: Cause, events
     case "nutrient-down":
       return "분해자가 사라져 흙의 양분이 줄었기 때문이에요.";
     case "event": {
+      if (model.invaders.includes(i)) return "다른 곳에서 들어왔기 때문이에요.";
       const ev = events.find((e) => e.id === c.eventId);
       return ev ? `${ev.because} 바로 영향을 받았어요.` : "사건 때문에 바로 영향을 받았어요.";
     }
@@ -75,7 +76,7 @@ export function explainAll(model: Model, scenario: Scenario, events: EventCard[]
     const n = series[last][i];
     const change = changeOf(n);
     const value = toDisplay(n);
-    if (hitByEvent.has(i)) return;
+    if (hitByEvent.has(i) || model.invaders.includes(i)) return; // 외래종은 처음과 견줄 수 없어 "영향이 퍼진 길"에서만 보여 줌
     if (change === "same") {
       const lost = s.prey.find((p) => final.gone[model.index[p.id]]);
       const kept = s.prey.filter((p) => !final.gone[model.index[p.id]]).sort((a, b) => b.preference - a.preference)[0];

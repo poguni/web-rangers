@@ -42,7 +42,13 @@ export interface Cause {
 
 export function initialState(model: Model): SimState {
   const n = model.species.length;
-  return { year: 0, N: new Array(n).fill(1), D: 1, soil: 1, gone: new Array(n).fill(false), effects: [], hits: [] };
+  const N = new Array(n).fill(1);
+  const gone = new Array(n).fill(false);
+  for (const i of model.invaders) {
+    N[i] = 0; // 외래종은 사건으로 들어오기 전에는 없음
+    gone[i] = true;
+  }
+  return { year: 0, N, D: 1, soil: 1, gone, effects: [], hits: [] };
 }
 
 function activeEffects(state: SimState) {
@@ -142,6 +148,7 @@ export function stepYear(model: Model, state: SimState): { state: SimState; caus
 function explainYear(model: Model, prev: SimState, next: SimState, effects: Effect[]): Cause[] {
   const { a, r, K, e, consumers, decomposers, species } = model;
   const N = next.N;
+  const base = (k: number) => (model.invaders.includes(k) ? 0 : 1); // 비교 기준: 처음 균형(외래종은 처음에 없었음)
   return species.map((_, i) => {
     const delta = N[i] - prev.N[i];
     const change = Math.abs(delta) < SAME_BELOW ? "same" : delta > 0 ? "up" : "down";
@@ -156,7 +163,7 @@ function explainYear(model: Model, prev: SimState, next: SimState, effects: Effe
 
     // 먹이
     const food: [number, number][] = [];
-    for (let p = 0; p < N.length; p++) if (a[p][i] > 0) food.push([p, e * a[p][i] * (N[p] - 1)]);
+    for (let p = 0; p < N.length; p++) if (a[p][i] > 0) food.push([p, e * a[p][i] * (N[p] - base(p))]);
     if (food.length > 0) {
       const total = food.reduce((s, t) => s + t[1], 0);
       if (total * sign > 0) {
@@ -166,7 +173,7 @@ function explainYear(model: Model, prev: SimState, next: SimState, effects: Effe
     }
     // 나를 먹는 동물 (먹힘이 줄면 늘어남)
     const pred: [number, number][] = [];
-    for (const k of consumers) if (a[i][k] > 0) pred.push([k, -a[i][k] * (N[k] - 1)]);
+    for (const k of consumers) if (a[i][k] > 0) pred.push([k, -a[i][k] * (N[k] - base(k))]);
     if (pred.length > 0) {
       const total = pred.reduce((s, t) => s + t[1], 0);
       if (total * sign > 0) {

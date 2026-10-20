@@ -6,7 +6,7 @@
 | 작성일 | 2026-10-19 |
 | 대상 PRD | `../prd-ecosystem-foodweb.md` (v0.5) |
 | 시안 파일 | `design-mockup.html` (브라우저로 열기, 상단 탭으로 화면 전환) |
-| 그림 프롬프트 | `image-prompts.md` (AI 이미지 생성용, 78장) |
+| 그림 프롬프트 | `image-prompts.md` (AI 이미지 생성용, 79장) |
 
 ## 변경 이력
 

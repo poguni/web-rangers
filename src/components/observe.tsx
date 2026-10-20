@@ -6,15 +6,17 @@ import { changeOf, flowEdges } from "../engine/explain";
 import type { Scenario } from "../engine/run";
 import { toDisplay } from "../engine/scoring";
 import { relationsOf } from "../game/build";
+import { josa } from "../utils/korean";
 import { Pic } from "./common";
 import { FoodWebBoard, type BoardEdge, type BoardNode } from "./FoodWebBoard";
 
 const MARK = { up: "▲", down: "▼", same: "●" };
 
-/** 변화 칩: 색 + 기호 + 수 ("▲ 136", "✕ 사라짐") */
-export function ChangeChip({ n, from }: { n: number; from?: number }) {
+/** 변화 칩: 색 + 기호 + 수 ("▲ 136", "✕ 사라짐"). 외래종은 처음에 없었으므로 "＋ 65" */
+export function ChangeChip({ n, from, invader }: { n: number; from?: number; invader?: boolean }) {
   const c = changeOf(n);
   const v = toDisplay(n);
+  if (invader && n > 0) return <span className="chg up">＋ {from !== undefined ? `0 → ${v}` : v}</span>;
   if (c === "gone") return <span className="chg gone">✕ 사라짐</span>;
   return (
     <span className={`chg ${c}`}>
@@ -43,9 +45,11 @@ function eventEffect(model: Model, event: EventCard): string {
       return `▲ ${names} 100 → ${Math.round(event.amount * 100)}`;
     case "abiotic":
     case "habitat":
-      return `▼ 생산자가 자라는 힘${event.duration ? ` (${event.duration}년 동안)` : ""}`;
-    default:
-      return "";
+      return `▼ ${josa(names || "생산자", "이/가")} 자라는 힘${event.duration ? ` (${event.duration}년 동안)` : ""}`;
+    case "mortality":
+      return `▼ ${josa(names, "이/가")} 살기 힘들어요${event.duration ? ` (${event.duration}년 동안)` : ""}`;
+    case "invasive":
+      return `＋ ${names} 0 → ${Math.round(event.amount * 100)}`;
   }
 }
 
@@ -66,17 +70,20 @@ export function EventCardView({ model, event, label }: { model: Model; event: Ev
       <h2>{event.title}</h2>
       <p>{event.story}</p>
       <div className="meta">
-        <span className={`chg ${event.type === "boost" ? "up" : vanished ? "gone" : "down"}`}>{eventEffect(model, event)}</span>
+        <span className={`chg ${event.type === "boost" || event.type === "invasive" ? "up" : vanished ? "gone" : "down"}`}>{eventEffect(model, event)}</span>
       </div>
     </article>
   );
 }
 
+/** 외래종은 들어오기 전(0)에는 보여 주지 않음 */
+export const isHidden = (model: Model, N: number[] | undefined, i: number) => model.invaders.includes(i) && (N?.[i] ?? 0) === 0;
+
 /** 생물 수 막대(최대 150, 처음 100에 점선) */
 export function PopulationBars({ model, N, ids, highlight }: { model: Model; N: number[]; ids: string[]; highlight?: string[] }) {
   return (
     <div className="bars" role="list" aria-label="생물 수">
-      {ids.map((id) => {
+      {ids.filter((id) => !isHidden(model, N, model.index[id])).map((id) => {
         const i = model.index[id];
         const s = model.species[i];
         return (
@@ -89,7 +96,7 @@ export function PopulationBars({ model, N, ids, highlight }: { model: Model; N: 
               <span className="fill" style={{ width: `${Math.min(100, (N[i] * 100) / 1.5)}%`, background: `var(--${s.role})` }} />
               <span className="base" style={{ left: `${100 / 1.5}%` }} />
             </div>
-            <ChangeChip n={N[i]} />
+            <ChangeChip n={N[i]} invader={model.invaders.includes(i)} />
           </div>
         );
       })}
@@ -172,11 +179,12 @@ export function webAt(
   const flowKeys = new Set((opts.flows ?? []).map((f) => `${f.from}>${f.to}`));
   const showDecomposers = opts.decomposers || (opts.flows ?? []).some((f) => model.species[model.index[f.from]]?.role === "decomposer");
   const nodes: BoardNode[] = model.species
-    .filter((s) => s.role !== "decomposer" || showDecomposers)
+    .filter((s, i) => (s.role !== "decomposer" || showDecomposers) && !isHidden(model, N, i))
     .map((s) => {
       const i = model.index[s.id];
       const n = N?.[i] ?? 1;
       const c = changeOf(n);
+      if (model.invaders.includes(i)) return { id: s.id, name: s.name, image: s.image, role: s.role, ...layout[s.id], badge: { text: `＋${toDisplay(n)}`, kind: "up" as const } };
       return {
         id: s.id,
         name: s.name,
@@ -187,9 +195,10 @@ export function webAt(
         badge: c === "up" || c === "down" ? { text: `${c === "up" ? "▲" : "▼"}${toDisplay(n)}`, kind: c } : undefined,
       };
     });
+  const shown = new Set(nodes.map((n) => n.id));
   const edges: BoardEdge[] = [
     ...relationsOf(model.species)
-      .filter((r) => !flowKeys.has(`${r.from}>${r.to}`))
+      .filter((r) => shown.has(r.from) && shown.has(r.to) && !flowKeys.has(`${r.from}>${r.to}`))
       .map((r) => ({ ...r, kind: (flowKeys.size ? "dim" : "plain") as BoardEdge["kind"] })),
     ...[...flowKeys].map((k) => {
       const [from, to] = k.split(">");

@@ -1,10 +1,10 @@
 // F6 사건 탐구 한 판: ① 안정 관찰 → ② 사건 → ③ 예측 → ④ 관찰 → ⑤ 탐구 보고서 → ⑥ 관리인 행동 → 4년 더 → ⑦ 균형 별
 import { useMemo, useRef, useState } from "react";
 import type { Route } from "../App";
-import { AppBar, Pic, starText } from "../components/common";
+import { AppBar, Pic, RewardNote, starText } from "../components/common";
 import { FoodWebBoard } from "../components/FoodWebBoard";
 import { ChangeChip, EventCardView, ObservePanel, PopulationBars, Timeline, useYearPlayer, webAt } from "../components/observe";
-import { forestStages, type Stage } from "../data/stages";
+import { allStages, type Stage } from "../data/stages";
 import { applyAction, unavailableReason } from "../engine/actions";
 import { explainAll, influencePath, yearNotes } from "../engine/explain";
 import { resolveTargets } from "../engine/events";
@@ -30,11 +30,11 @@ const ANSWER_TEXT = Object.fromEntries(ANSWERS.map(([a, m, t]) => [a, `${m} ${t}
 const yearLabels = (n: number, from = 0, first = "처음") => Array.from({ length: n + 1 }, (_, i) => (i === 0 ? first : `${from + i}년`));
 
 export function InvestigateScreen({ stageId, go }: { stageId: string; go: (r: Route) => void }) {
-  const stage = forestStages.find((s) => s.id === stageId);
+  const stage = allStages.find((s) => s.id === stageId);
   if (!stage) {
     return (
       <div className="screen">
-        <AppBar onExit={() => go("stages")} />
+        <AppBar onExit={() => go("")} />
         <main className="body">
           <p>찾는 사건이 없어요.</p>
           <button className="btn" onClick={() => go("stages")}>
@@ -49,7 +49,8 @@ export function InvestigateScreen({ stageId, go }: { stageId: string; go: (r: Ro
 
 function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) {
   const p = useMemo(() => prepareStage(stage), [stage]);
-  const theme = THEMES[stage.theme]!;
+  const theme = THEMES[stage.theme];
+  const list = `stages/${stage.theme}` as const;
   const { model, event } = p;
   const name = (id: string) => model.species[model.index[id]].name;
   const [phase, setPhase] = useState<Phase>("intro");
@@ -57,6 +58,8 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
   const [action, setAction] = useState<number | null>(null);
   const recordStage = useProgress((s) => s.recordStage);
   const recordPredictions = useProgress((s) => s.recordPredictions);
+  const grant = useProgress((s) => s.grant);
+  const [reward, setReward] = useState<string[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const ready = answers.q1 !== undefined && answers.q2 !== undefined && answers.q3 !== undefined;
@@ -66,14 +69,17 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
     const card = stage.actions[action];
     return { card, scenario: runScenario(model, AFTER_YEARS, [], applyAction(model, p.scenario.final, card, `action:${card.type}`)) };
   }, [action, model, p, stage.actions]);
-  const stars = score ? finalStars(score, after?.scenario.final.N) : 1;
+  const stars = score ? finalStars(score, after?.scenario.final.N, model.invaders) : 1;
 
   function finish() {
     setPhase("done");
-    recordStage(stage.id, stars, score!.total + stars * 50);
+    const got = recordStage(stage.id, stage.theme, stars, score!.total + stars * 50);
+    // 외래종 사건을 탐구하면 외래종 카드(F2-5 특별 카드)
+    const invader = event.invader ? grant([event.invader.id]) : [];
+    setReward((r) => [...r, ...got, ...invader]);
   }
 
-  const next = forestStages.find((s) => s.number === stage.number + 1);
+  const next = allStages.find((s) => s.theme === stage.theme && s.number === stage.number + 1);
   const crumb = `${theme.name} › 사건 탐구 ${stage.number}`;
   const steps = (
     <span className="pill navy" aria-label="진행 단계">
@@ -89,7 +95,7 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
 
   return (
     <div className="screen">
-      <AppBar crumb={crumb} onExit={() => go("stages")}>
+      <AppBar crumb={crumb} onExit={() => go(list)}>
         {steps}
       </AppBar>
 
@@ -102,7 +108,7 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
               </div>
             </div>
             <section className="panel right side">
-              <h3>지금 {theme.name}은 균형을 이루고 있어요</h3>
+              <h3>지금 {josa(theme.name, "은/는")} 균형을 이루고 있어요</h3>
               <div className="sub">3년 동안 지켜봤더니 생물 수가 거의 변하지 않았어요.</div>
               <PopulationBars model={model} N={runScenario(model, 3).final.N} ids={model.species.filter((s) => s.role !== "decomposer").map((s) => s.id)} />
               <button className="btn gold" onClick={() => setPhase("predict")}>
@@ -127,7 +133,7 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
               answers={answers}
               setAnswers={setAnswers}
               onSubmit={() => {
-                recordPredictions(stage.id, [score!.q1 > 0, score!.q2 === POINTS.q2, score!.q3 > 0]);
+                setReward(recordPredictions(stage.id, stage.theme, [score!.q1 > 0, score!.q2 === POINTS.q2, score!.q3 > 0]));
                 setPhase("observe");
               }}
             />
@@ -244,11 +250,13 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
             <div>
               {after
                 ? stars === 3
-                  ? `${theme.name}이 처음과 거의 같아졌어요. 균형을 되찾았어요!`
+                  ? `${josa(theme.name, "이/가")} 처음과 거의 같아졌어요. 균형을 되찾았어요!`
                   : stars === 2
                     ? "모든 생물이 살아 있지만, 아직 처음과는 달라요."
                     : "아직 사라진 생물이 있어요. 다른 행동도 생각해 봐요."
-                : "먹이사슬과 먹이그물의 차이를 잘 살펴봤어요."}
+                : stage.compareChain
+                  ? "먹이사슬과 먹이그물의 차이를 잘 살펴봤어요."
+                  : "이번 탐구는 예측 점수로 별을 받았어요."}
             </div>
             <div className="total" style={{ justifyContent: "center" }}>
               <div>
@@ -261,14 +269,16 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
                 균형 별 {stars} × 50점
               </div>
             </div>
+            <RewardNote ids={reward} />
             <div className="submit-row" style={{ justifyContent: "center" }}>
-              <button className="btn ghost" onClick={() => go("stages")}>
+              <button className="btn ghost" onClick={() => go(list)}>
                 사건 목록
               </button>
               <button
                 className="btn ghost"
                 onClick={() => {
                   setAnswers({});
+                  setReward([]);
                   setAction(null);
                   setPhase("intro");
                 }}
@@ -545,7 +555,7 @@ function Report({ p, answers, total, scores }: { p: PreparedStage; answers: Answ
                   <Pic image={sp(id).image} />
                 </span>
                 <b>{sp(id).name}</b>
-                <ChangeChip n={N(id)} />
+                <ChangeChip n={N(id)} invader={model.invaders.includes(model.index[id])} />
               </div>
             </span>
           ))}

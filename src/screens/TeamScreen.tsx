@@ -7,7 +7,7 @@ import { FoodWebBoard } from "../components/FoodWebBoard";
 import { ChangeChip, Timeline, useYearPlayer, webAt } from "../components/observe";
 import { teamRounds } from "../data/team";
 import { flowEdges, yearNotes } from "../engine/explain";
-import { YEARS, type Answer } from "../game/stage";
+import { THEME_IDS, THEMES, YEARS, type Answer } from "../game/stage";
 import { DEFAULT_TEAM, prepareRound, ranking, ROUND_POINTS, useTeam, type TeamSettings } from "../game/team";
 import { josa } from "../utils/korean";
 
@@ -20,7 +20,7 @@ const MARK = Object.fromEntries(ANSWERS.map(([a, m, t]) => [a, `${m} ${t}`])) as
 
 export function TeamScreen({ go }: { go: (r: Route) => void }) {
   const t = useTeam();
-  const round = teamRounds[t.round];
+  const round = teamRounds[t.theme][t.round];
   const p = useMemo(() => prepareRound(round), [round]);
   const exit = (
     <button className="iconbtn" aria-label="교사 메뉴로" onClick={() => go("teacher")}>
@@ -125,7 +125,7 @@ export function TeamScreen({ go }: { go: (r: Route) => void }) {
 
 function Setup({ onStart }: { onStart: (s: TeamSettings) => void }) {
   const saved = useTeam();
-  const [s, setS] = useState<TeamSettings>({ groups: saved.groups, rounds: saved.rounds, seconds: saved.seconds, hide: saved.hide });
+  const [s, setS] = useState<TeamSettings>({ theme: saved.theme, groups: saved.groups, rounds: saved.rounds, seconds: saved.seconds, hide: saved.hide });
   const setCount = (n: number) => setS({ ...s, groups: Array.from({ length: n }, (_, i) => s.groups[i] ?? DEFAULT_TEAM.groups[i] ?? `${i + 1}모둠`) });
   const names = s.groups.map((g, i) => g.trim() || `${i + 1}모둠`);
   const unique = new Set(names).size === names.length;
@@ -143,6 +143,7 @@ function Setup({ onStart }: { onStart: (s: TeamSettings) => void }) {
   );
   return (
     <div className="setup">
+      {seg("테마", THEME_IDS, s.theme, (t) => THEMES[t].name, (theme) => setS({ ...s, theme }))}
       {seg("모둠 수", [2, 3, 4, 5, 6, 7, 8], s.groups.length, (n) => `${n}`, setCount)}
       <div className="setup-row">
         <b>모둠 이름</b>

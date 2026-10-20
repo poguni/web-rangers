@@ -42,7 +42,11 @@ export function applyEvent(model: Model, state: SimState, event: EventCard): Sim
       effects.push({ eventId: event.id, kind: event.type, targets, amount: event.amount, untilYear: until });
       return { ...state, effects };
     case "invasive":
-      throw new Error("외래종 유입은 강 테마(M5)에서 구현해요");
+      for (const i of targets) {
+        N[i] = event.amount;
+        gone[i] = false;
+      }
+      break;
   }
   return { ...state, N, gone, hits: [...state.hits, ...hit] };
 }

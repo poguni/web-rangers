@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { TeamRound } from "../data/team";
+import type { Theme } from "../data/types";
 import { runScenario } from "../engine/run";
 import { judge, toDisplay } from "../engine/scoring";
 import { modelFor, THEMES, YEARS, type Answer } from "./stage";
@@ -9,9 +10,9 @@ import { modelFor, THEMES, YEARS, type Answer } from "./stage";
 export const ROUND_POINTS = 100;
 
 export function prepareRound(round: TeamRound) {
-  const theme = THEMES[round.theme]!;
+  const theme = THEMES[round.theme];
   const event = theme.events.find((e) => e.id === round.eventId)!;
-  const model = modelFor(round.theme);
+  const model = modelFor(round.theme, undefined, [event]);
   const scenario = runScenario(model, YEARS, [{ atYear: 0, event }]);
   const value = toDisplay(scenario.final.N[model.index[round.target]]);
   const answer: Answer = value === 0 ? "down" : judge(value);
@@ -19,6 +20,7 @@ export function prepareRound(round: TeamRound) {
 }
 
 export interface TeamSettings {
+  theme: Theme;
   groups: string[]; // 모둠 이름
   rounds: number; // 3 또는 5
   seconds: number; // 토의 시간
@@ -41,6 +43,7 @@ interface TeamState extends TeamSettings {
 }
 
 export const DEFAULT_TEAM: TeamSettings = {
+  theme: "forest",
   groups: Array.from({ length: 6 }, (_, i) => `${i + 1}모둠`),
   rounds: 3,
   seconds: 90,

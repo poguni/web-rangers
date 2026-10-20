@@ -8,6 +8,7 @@ import "./styles/tokens.css";
 import "./styles/app.css";
 import "./styles/investigate.css";
 import "./styles/classroom.css";
+import "./styles/cards.css";
 import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(

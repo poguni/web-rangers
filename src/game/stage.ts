@@ -1,5 +1,7 @@
 // 사건 탐구 한 판 준비·채점 (화면과 테스트가 함께 씀)
 import { forestEvents, forestLayout, forestSpecies } from "../data/forest";
+import { riverEvents, riverLayout, riverSpecies } from "../data/river";
+import { seaEvents, seaLayout, seaSpecies } from "../data/sea";
 import type { Stage } from "../data/stages";
 import type { EventCard, Species, Theme } from "../data/types";
 import { calibrate, subWeb, type Model } from "../engine/calibrate";
@@ -9,19 +11,28 @@ import { balanceStars, judge, POINTS, scoreQ2, scoreStars, toDisplay } from "../
 export const YEARS = 8; // 사건 뒤 관찰 기간
 export const AFTER_YEARS = 4; // 관리인 행동 뒤 관찰 기간
 
-export const THEMES: Record<Theme, { name: string; species: Species[]; events: EventCard[]; layout: Record<string, { x: number; y: number }> } | null> = {
+export interface ThemeData {
+  name: string;
+  species: Species[];
+  events: EventCard[];
+  layout: Record<string, { x: number; y: number }>;
+}
+
+export const THEMES: Record<Theme, ThemeData> = {
   forest: { name: "숲", species: forestSpecies, events: forestEvents, layout: forestLayout },
-  river: null, // M5
-  sea: null, // M5
+  river: { name: "강", species: riverSpecies, events: riverEvents, layout: riverLayout },
+  sea: { name: "바다", species: seaSpecies, events: seaEvents, layout: seaLayout },
 };
+export const THEME_IDS: Theme[] = ["forest", "river", "sea"];
 
 const models = new Map<string, Model>();
-/** 테마 먹이그물(또는 일부)의 보정 모델. 같은 입력이면 다시 계산하지 않음 */
-export function modelFor(theme: Theme, ids?: string[]): Model {
-  const key = `${theme}:${ids?.join(",") ?? "all"}`;
+/** 테마 먹이그물(또는 일부)의 보정 모델. 외래종 사건이 있으면 외래종을 넣음. 같은 입력이면 다시 계산하지 않음 */
+export function modelFor(theme: Theme, ids?: string[], events: EventCard[] = []): Model {
+  const invaders = events.flatMap((e) => (e.invader ? [e.invader] : []));
+  const key = `${theme}:${ids?.join(",") ?? "all"}:${invaders.map((s) => s.id).join(",")}`;
   if (!models.has(key)) {
-    const all = THEMES[theme]!.species;
-    models.set(key, calibrate(ids ? subWeb(all, ids) : all));
+    const all = THEMES[theme].species;
+    models.set(key, calibrate([...(ids ? subWeb(all, ids) : all), ...invaders]));
   }
   return models.get(key)!;
 }
@@ -40,9 +51,9 @@ export interface PreparedStage {
 }
 
 export function prepareStage(stage: Stage): PreparedStage {
-  const theme = THEMES[stage.theme]!;
+  const theme = THEMES[stage.theme];
   const event = theme.events.find((e) => e.id === stage.eventId)!;
-  const model = modelFor(stage.theme);
+  const model = modelFor(stage.theme, undefined, [event]);
   const scenario = runScenario(model, YEARS, [{ atYear: 0, event }]);
   let chain: PreparedStage["chain"];
   if (stage.compareChain) {
@@ -84,6 +95,6 @@ export function scoreAnswers(p: PreparedStage, a: Answers): StageScore {
 }
 
 /** 판이 끝났을 때 별: 행동이 있으면 행동 뒤 균형 별, 비교 탐구는 예측 점수로 */
-export function finalStars(score: StageScore, afterN?: number[]): 1 | 2 | 3 {
-  return afterN ? balanceStars(afterN) : scoreStars(score.total);
+export function finalStars(score: StageScore, afterN?: number[], invaders: number[] = []): 1 | 2 | 3 {
+  return afterN ? balanceStars(afterN, invaders) : scoreStars(score.total);
 }

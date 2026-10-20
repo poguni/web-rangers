@@ -27,10 +27,11 @@ export function scoreQ2(options: string[], change: (id: string) => number, answe
   return 0;
 }
 
-/** 균형 별(F6 ⑦): 사라진 생물이 있으면 1개, 모두 살아 있으면 2개, 처음과 평균 15 안이면 3개 */
-export function balanceStars(N: number[]): 1 | 2 | 3 {
-  if (N.some((v) => v === 0)) return 1;
-  const avg = N.reduce((s, v) => s + Math.abs(v - 1) * 100, 0) / N.length;
+/** 균형 별(F6 ⑦): 사라진 생물이 있으면 1개, 모두 살아 있으면 2개, 처음과 평균 15 안이면 3개. 외래종(ignore)은 세지 않음 */
+export function balanceStars(N: number[], ignore: number[] = []): 1 | 2 | 3 {
+  const native = N.filter((_, i) => !ignore.includes(i));
+  if (native.some((v) => v === 0)) return 1;
+  const avg = native.reduce((s, v) => s + Math.abs(v - 1) * 100, 0) / native.length;
   return avg <= 15 ? 3 : 2;
 }
 

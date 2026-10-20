@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { PLACEHOLDER } from "../data/placeholders";
+import { cardById } from "../game/cards";
 import { ROLES } from "../data/roles";
 import type { Role } from "../data/types";
 
@@ -62,6 +63,24 @@ export function AppBar({ crumb, children, onExit }: { crumb?: ReactNode; childre
         </button>
       )}
     </header>
+  );
+}
+
+/** 카드 보상 알림(F2-3): "🎁 새 카드 2장: 붕어마름, 부들" */
+export function RewardNote({ ids }: { ids: string[] }) {
+  if (ids.length === 0) return null;
+  return (
+    <div className="reward" role="status">
+      <b>🎁 새 카드 {ids.length}장!</b>
+      {ids.map((id) => {
+        const s = cardById.get(id)!;
+        return (
+          <span key={id} className="reward-card">
+            <Pic image={s.image} /> {s.name}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 

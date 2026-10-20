@@ -1,6 +1,6 @@
 // PRD 6.6 출제 품질: 스테이지 질문이 애매하지 않고, 정답이 시뮬레이션과 맞는지
 import { describe, expect, it } from "vitest";
-import { forestStages } from "../../src/data/stages";
+import { allStages, forestStages } from "../../src/data/stages";
 import { BANNED_WORDS } from "../../src/data/words";
 import { applyAction, unavailableReason } from "../../src/engine/actions";
 import { explainAll, influencePath } from "../../src/engine/explain";
@@ -8,7 +8,7 @@ import { runScenario } from "../../src/engine/run";
 import { balanceStars, isAmbiguous, toDisplay } from "../../src/engine/scoring";
 import { AFTER_YEARS, prepareStage } from "../../src/game/stage";
 
-describe.each(forestStages.map((s) => [s.id, s] as const))("%s", (_, stage) => {
+describe.each(allStages.map((s) => [s.id, s] as const))("%s", (_, stage) => {
   const p = prepareStage(stage);
   const value = (id: string) => toDisplay(p.scenario.final.N[p.model.index[id]]);
 
@@ -36,14 +36,11 @@ describe.each(forestStages.map((s) => [s.id, s] as const))("%s", (_, stage) => {
   });
 
   it("알맞은 관리인 행동 하나만 균형 별 3개를 받아요", () => {
-    if (stage.compareChain) {
-      expect(stage.actions).toHaveLength(0);
-      return;
-    }
+    if (stage.actions.length === 0) return; // 먹이사슬 비교·바다 2: 예측 점수로 별
     expect(stage.actions).toHaveLength(3);
     const stars = stage.actions
       .filter((a) => !unavailableReason(p.model, p.scenario.final, a))
-      .map((a) => balanceStars(runScenario(p.model, AFTER_YEARS, [], applyAction(p.model, p.scenario.final, a, "test")).final.N));
+      .map((a) => balanceStars(runScenario(p.model, AFTER_YEARS, [], applyAction(p.model, p.scenario.final, a, "action:test")).final.N, p.model.invaders));
     expect(stars.filter((s) => s === 3), `행동별 별 ${stars}`).toHaveLength(1);
     expect(stars.length).toBeGreaterThanOrEqual(2);
   });

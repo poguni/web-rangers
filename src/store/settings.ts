@@ -4,6 +4,7 @@ const UNLOCK_KEY = "webrangers.v1.teacher";
 
 interface Settings {
   pinHash?: string;
+  allCards?: boolean; // F2-6 교사가 이 기기의 카드를 모두 열었는지
 }
 
 function read(): Settings {
@@ -29,6 +30,11 @@ export const checkPin = (pin: string) => read().pinHash === hashPin(pin);
 
 export function setPin(pin: string) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...read(), pinHash: hashPin(pin) }));
+}
+
+export const allCardsOpen = () => Boolean(read().allCards);
+export function setAllCardsOpen(on: boolean) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...read(), allCards: on }));
 }
 
 /** 교사 메뉴를 한 번 열면 브라우저를 닫을 때까지 열려 있음 */
