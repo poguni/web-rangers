@@ -19,7 +19,7 @@ export interface BoardNode {
 export interface BoardEdge {
   from: string;
   to: string;
-  kind: "ok" | "bad" | "hint" | "decomp" | "plain" | "dim" | "flow";
+  kind: "ok" | "bad" | "hint" | "decomp" | "plain" | "dim" | "flow" | "chain";
   fresh?: boolean; // 방금 이은 화살표(그려지는 효과)
 }
 
@@ -31,7 +31,7 @@ const ROLE_COLOR: Record<Role, string> = {
   consumer: "var(--consumer)",
   decomposer: "var(--decomposer)",
 };
-const MARKERS = { plain: "#8D8574", ok: "#3F9A4E", bad: "#D1495B", rubber: "#24466B", decomp: "#8B6B4E", dim: "#DDD4C2", flow: "#E3A81B" };
+const MARKERS = { plain: "#8D8574", ok: "#3F9A4E", bad: "#D1495B", rubber: "#24466B", decomp: "#8B6B4E", dim: "#DDD4C2", flow: "#E3A81B", chain: "#D1495B" };
 const BADGE_COLOR = { up: "#1F8A70", down: "#D1495B", gone: "#6B6559" };
 
 /** 화면 좌표 → 판 좌표(viewBox) */
@@ -131,7 +131,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
   };
 
   const okList = edges
-    .filter((e) => e.kind === "ok" || e.kind === "plain" || e.kind === "flow")
+    .filter((e) => e.kind === "ok" || e.kind === "plain" || e.kind === "flow" || e.kind === "chain")
     .map((e) => `${byId.get(e.from)?.name} → ${byId.get(e.to)?.name}`)
     .join(", ");
 

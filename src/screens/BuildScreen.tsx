@@ -1,10 +1,14 @@
 // 03 먹이그물 만들기(F3): 테마 생물을 판에 놓고 화살표 잇기(숲은 교과서 49쪽 32개)
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Route } from "../App";
 import { AppBar, Pic, RewardNote, RoleBadge, starText, Toast, type ToastMessage } from "../components/common";
 import { clientToBoard, FoodWebBoard, type BoardEdge, type BoardNode } from "../components/FoodWebBoard";
 import type { Theme } from "../data/types";
 import {
+  CHAIN_MIN,
+  CHAIN_MISSION,
+  chainKey,
+  chainStep,
   completionTarget,
   findFreeSpot,
   judgeLink,
@@ -20,6 +24,7 @@ import { THEMES } from "../game/stage";
 import { useCardDrag } from "../hooks/useCardDrag";
 import { useProgress } from "../store/progress";
 import { josa } from "../utils/korean";
+import { saveSvgAsPng } from "../utils/svgImage";
 
 const START: ToastMessage = {
   kind: "info",
@@ -49,6 +54,20 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
   const [flash, setFlash] = useState<Relation | null>(null);
   const [doneOpen, setDoneOpen] = useState(false);
   const doneShown = useRef(false);
+  // F3-10 먹이사슬 찾기
+  const [chainMode, setChainMode] = useState(false);
+  const [path, setPath] = useState<string[]>([]);
+  const [found, setFound] = useState<string[]>([]);
+  // 파일럿 지표용 시도 기록(화면을 나갈 때 한 번 저장)
+  const recordBuild = useProgress((s) => s.recordBuild);
+  const tally = useRef({ ok: 0, reversed: 0, wrong: 0, hints: 0, done: false });
+  useEffect(
+    () => () => {
+      const t = tally.current;
+      if (t.ok + t.reversed + t.wrong > 0) recordBuild({ theme, total: TOTAL, ...t });
+    },
+    [recordBuild, theme, TOTAL],
+  );
 
   const tray = trayOrder.filter((s) => !placed[s.id]);
   const stars = starsFor(hintsUsed);
@@ -83,6 +102,8 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
       const next = new Set(linked).add(key);
       setLinked(next);
       setFresh(key);
+      tally.current.ok = next.size;
+      tally.current.done = next.size >= GOAL;
       if (hint?.from === from && hint.to === to) setHint(null);
       if (next.size === TOTAL) setToast({ kind: "ok", title: `화살표 ${TOTAL}개를 모두 찾았어요!`, text: `${name}의 먹고 먹히는 관계를 모두 이었어요.` });
       else setToast({ kind: "ok", title: `맞아요! ${a.name} → ${b.name}`, text: `${josa(b.name, "은/는")} ${josa(a.name, "을/를")} 먹어요.` });
@@ -94,10 +115,50 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
     } else if (r.kind === "already") {
       setToast({ kind: "info", title: "이미 이은 화살표예요." });
     } else {
+      if (r.kind === "reversed") tally.current.reversed++;
+      else tally.current.wrong++;
       setFlash({ from, to });
       setTimeout(() => setFlash(null), 600);
       setToast({ kind: "bad", title: r.title, text: r.text });
     }
+  }
+
+  function startChain() {
+    setChainMode(true);
+    setPath([]);
+    setDoneOpen(false);
+    setToast({ kind: "info", title: `먹이사슬을 ${CHAIN_MISSION}개 찾아보세요.`, text: "생산자부터 시작해 화살표를 따라 생물을 차례로 눌러요." });
+  }
+
+  function onChainTap(id: string) {
+    const r = chainStep(species, linked, path, id);
+    if (r.kind === "bad") return setToast({ kind: "bad", title: "다시 생각해 봐요!", text: r.text });
+    const next = [...path, id];
+    const names = next.map((x) => byId.get(x)!.name).join(" → ");
+    if (!r.ended) {
+      setPath(next);
+      return setToast({ kind: "info", title: names, text: next.length >= CHAIN_MIN ? "더 이어 가거나, 여기서 마칠 수 있어요." : "화살표를 따라 다음 생물을 눌러요." });
+    }
+    finishChain(next);
+  }
+
+  function finishChain(p: string[]) {
+    const names = p.map((x) => byId.get(x)!.name).join(" → ");
+    setPath([]);
+    if (p.length < CHAIN_MIN) return setToast({ kind: "bad", title: names, text: `생물 ${CHAIN_MIN}종 이상으로 이어진 먹이사슬을 찾아봐요.` });
+    if (found.includes(chainKey(p))) return setToast({ kind: "info", title: "이미 찾은 먹이사슬이에요.", text: names });
+    const all = [...found, chainKey(p)];
+    setFound(all);
+    setToast({
+      kind: "ok",
+      title: all.length >= CHAIN_MISSION ? `🎉 먹이사슬 ${CHAIN_MISSION}개를 모두 찾았어요!` : `먹이사슬 ${all.length}개 찾았어요!`,
+      text: all.length >= CHAIN_MISSION ? "먹이사슬 여러 개가 얽혀 먹이그물이 돼요." : names,
+    });
+  }
+
+  async function saveImage() {
+    const who = useProgress.getState().current ?? "";
+    await saveSvgAsPng(svgRef.current!, `먹이그물_${name}_${who}.png`, `${name} 먹이그물 · ${who === "guest" ? "손님" : who} · 화살표 ${linked.size}개`);
   }
 
   function showHint() {
@@ -141,11 +202,17 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
     })),
   ];
   const placedIds = Object.keys(placed);
+  // 찾은 먹이사슬과 지금 고르는 줄은 빨간 점선(교과서 그림과 같게)
+  const pairs = (c: string) => {
+    const ids = c.split(">");
+    return ids.slice(1).map((to, i) => linkKey(ids[i], to));
+  };
+  const chainEdges = new Set([...found, chainKey(path)].flatMap(pairs));
   const edges: BoardEdge[] = [
     ...(showDecomp ? placedIds.map((id, k) => ({ from: id, to: decomposers[k % decomposers.length].id, kind: "decomp" as const })) : []),
     ...[...linked].map((k) => {
       const [from, to] = k.split(">");
-      return { from, to, kind: "ok" as const, fresh: k === fresh };
+      return { from, to, kind: chainMode && chainEdges.has(k) ? ("chain" as const) : ("ok" as const), fresh: k === fresh };
     }),
     ...(hint ? [{ ...hint, kind: "hint" as const }] : []),
     ...(flash ? [{ ...flash, kind: "bad" as const }] : []),
@@ -178,6 +245,12 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
           </button>
           <button className="btn ghost sm" onClick={arrange} disabled={placedIds.length === 0}>
             📐 정리하기
+          </button>
+          <button className="btn ghost sm" onClick={() => (chainMode ? setChainMode(false) : startChain())} disabled={linked.size < GOAL} aria-pressed={chainMode}>
+            🔗 {chainMode ? `먹이사슬 ${found.length}/${CHAIN_MISSION}` : "먹이사슬 찾기"}
+          </button>
+          <button className="btn ghost sm" onClick={saveImage} disabled={placedIds.length === 0}>
+            🖼️ 그림 저장
           </button>
           <span className="toggle">
             분해자 연결 보기
@@ -232,10 +305,16 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
               label={`${name} 먹이그물 만들기 판`}
               nodes={nodes}
               edges={edges}
-              onLink={onLink}
-              onBoardTap={onBoardTap}
+              onLink={chainMode ? undefined : onLink}
+              onNodeTap={chainMode ? onChainTap : undefined}
+              onBoardTap={chainMode ? undefined : onBoardTap}
               decomposerBox
             />
+            {chainMode && path.length >= CHAIN_MIN && (
+              <button className="btn gold sm chain-end" onClick={() => finishChain(path)}>
+                여기서 마치기
+              </button>
+            )}
             {doneOpen && (
               <div className="done-overlay">
                 <div className="panel" role="dialog" aria-label="먹이그물 완성">
@@ -252,6 +331,9 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
                   <div className="row">
                     <button className="btn gold" onClick={() => setDoneOpen(false)}>
                       더 찾아보기
+                    </button>
+                    <button className="btn" onClick={startChain}>
+                      🔗 먹이사슬 찾기
                     </button>
                     <button className="btn ghost" onClick={() => go("")}>
                       처음 화면으로

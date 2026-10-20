@@ -9,6 +9,7 @@ import "./styles/app.css";
 import "./styles/investigate.css";
 import "./styles/classroom.css";
 import "./styles/cards.css";
+import "./styles/tools.css";
 import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(

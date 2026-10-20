@@ -34,3 +34,17 @@
 @media (max-width: 1000px) {
   .codex { grid-template-columns: 1fr; }
 }
+
+/* ── 먹이사슬 찾기(F3-10): 교과서 그림처럼 빨간 점선 ── */
+.web .edge.chain { stroke: var(--down); stroke-width: 4; stroke-dasharray: 9 6; }
+.canvas .chain-end { position: absolute; right: 14px; bottom: 14px; }
+
+/* ── 실험 기록장(F7-5) ── */
+.note-row { display: flex; gap: 8px; flex: none; }
+.note-row input { flex: 1; min-width: 0; min-height: 44px; font: inherit; font-size: 15px; border: 2px solid var(--line); border-radius: 12px; padding: 0 12px; background: #fff; }
+.notes-overlay .panel { max-width: 560px; width: 92%; max-height: 92%; overflow-y: auto; align-items: stretch; text-align: left; }
+.notes { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.notes li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 14px; }
+.notes li > b, .notes li > span { grid-column: 1; }
+.notes li > button { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+.notes .memo { color: var(--navy); }

@@ -2,6 +2,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { Route } from "../App";
 import { AppBar, Toast } from "../components/common";
+import { useProgress, useStudent } from "../store/progress";
 import { FoodWebBoard } from "../components/FoodWebBoard";
 import { webAt } from "../components/observe";
 import { forestChain } from "../data/forest";
@@ -9,7 +10,7 @@ import type { EventCard, Theme } from "../data/types";
 import type { Model } from "../engine/calibrate";
 import { explainAll } from "../engine/explain";
 import { runScenario, type Scenario } from "../engine/run";
-import { toDisplay } from "../engine/scoring";
+import { judge, toDisplay } from "../engine/scoring";
 import { modelFor, THEMES } from "../game/stage";
 import { josa } from "../utils/korean";
 
@@ -46,6 +47,13 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
   const [years, setYears] = useState(8);
   const [compare, setCompare] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  // F7-5 실험 기록장
+  const notes = useStudent().notes.filter((n) => n.theme === themeId);
+  const addNote = useProgress((s) => s.addNote);
+  const removeNote = useProgress((s) => s.removeNote);
+  const [memo, setMemo] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   const event = theme.events.find((e) => e.id === eventId);
   const model = modelFor(themeId, undefined, event ? [event] : []); // 외래종 사건이면 외래종을 넣은 모델
@@ -65,6 +73,7 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
     }
     setResult({ years, web, chain, skipped });
     setSelected(null);
+    setSaved(false);
   }
 
   function reset() {
@@ -84,6 +93,27 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
       badge: !result && mark ? { text: `${mark[1]}${mark[2]}`, kind: op === "boost" ? ("up" as const) : op === "remove" ? ("gone" as const) : ("down" as const) } : n.badge,
     };
   });
+
+  function saveNote() {
+    if (!result) return;
+    const setup = [
+      ...Object.entries(ops).map(([id, op]) => `${sp(id).name} ${OPS.find((o) => o[0] === op)![2]}`),
+      ...(event ? [event.title] : []),
+      `${result.years}년`,
+    ].join(" · ");
+    const changes = model.species
+      .map((s, i) => ({ s, i, d: Math.abs(result.web.final.N[i] - 1) }))
+      .filter(({ i }) => !Object.keys(ops).includes(model.species[i].id))
+      .sort((a, b) => b.d - a.d)
+      .slice(0, 3)
+      .map(({ s, i }) => {
+        const v = toDisplay(result.web.final.N[i]);
+        return `${s.name} ${v === 0 ? "✕" : { up: "▲", down: "▼", same: "●" }[judge(v)]} ${v}`;
+      });
+    addNote({ theme: themeId, setup, result: changes.join(", "), memo: memo.trim() });
+    setMemo("");
+    setSaved(true);
+  }
 
   const summary = useMemo(() => (result ? explainAll(model, result.web, event ? [event] : []).slice(0, 3) : []), [result, model, event]);
 
@@ -117,6 +147,9 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
             </span>
           )}
           <span className="sp" style={{ flex: 1 }} />
+          <button className="btn ghost sm" aria-pressed={notesOpen} onClick={() => setNotesOpen((v) => !v)}>
+            📒 기록장 {notes.length}
+          </button>
           <button className="btn ghost sm" onClick={reset}>
             ↺ 처음부터
           </button>
@@ -128,6 +161,32 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
         <div className="lab">
           <div className="canvas">
             <FoodWebBoard svgRef={svgRef} label={`실험할 생물을 고르는 ${theme.name} 먹이그물`} nodes={shownNodes} edges={edges} onNodeTap={(id) => setSelected((s) => (s === id ? null : id))} />
+            {notesOpen && (
+              <div className="done-overlay notes-overlay">
+                <div className="panel" role="dialog" aria-label="실험 기록장">
+                  <h3>📒 실험 기록장 <span className="sub">— {theme.name}</span></h3>
+                  {notes.length === 0 ? (
+                    <p className="sub">아직 남긴 실험이 없어요. 실험을 한 뒤 메모와 함께 남겨 보세요.</p>
+                  ) : (
+                    <ol className="notes">
+                      {notes.map((n) => (
+                        <li key={n.at}>
+                          <b>{n.setup}</b>
+                          <span>{n.result}</span>
+                          {n.memo && <span className="memo">✏️ {n.memo}</span>}
+                          <button className="btn ghost sm" aria-label="이 기록 지우기" onClick={() => removeNote(n.at)}>
+                            🗑️
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  <button className="btn" onClick={() => setNotesOpen(false)}>
+                    닫기
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="op-menu" role="group" aria-label="고른 생물 바꾸기">
               {selected ? (
                 <>
@@ -172,6 +231,18 @@ export function LabScreen({ theme: themeId, go }: { theme: Theme; go: (r: Route)
                 <LineChart model={model} chainModel={chainModel} result={result} focus={Object.keys(ops)} />
                 {result.skipped.length > 0 && <p className="real-note">먹이사슬에 없어 비교에서 빠진 것: {result.skipped.join(", ")}</p>}
                 <Toast message={summary.length ? { kind: "info", title: "실험 결과", text: summary.map((e) => `${e.title} ${e.text}`).join(" ") } : null} />
+                <div className="note-row">
+                  <input
+                    value={memo}
+                    maxLength={60}
+                    onChange={(e) => setMemo(e.target.value)}
+                    placeholder="한 줄 메모(예: 개구리가 없으면 풀이 줄어요)"
+                    aria-label="실험 메모"
+                  />
+                  <button className="btn sm" onClick={saveNote} disabled={saved}>
+                    {saved ? "✔ 남겼어요" : "📒 기록장에 남기기"}
+                  </button>
+                </div>
               </>
             ) : (
               <p className="sub" style={{ margin: "auto", textAlign: "center" }}>

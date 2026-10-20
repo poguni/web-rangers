@@ -4,7 +4,7 @@ import { needsReview, sortedStudents, studentRow, summary, toCsv } from "../../s
 import type { StudentRecord } from "../../src/store/progress";
 
 const at = "2026-10-20T01:30:00.000Z";
-const rec = (key: string, extra: Partial<StudentRecord> = {}): StudentRecord => ({ key, cards: [], streak: 0, stages: {}, predictions: [], diagnostic: {}, ...extra });
+const rec = (key: string, extra: Partial<StudentRecord> = {}): StudentRecord => ({ key, cards: [], streak: 0, builds: [], notes: [], stages: {}, predictions: [], diagnostic: {}, ...extra });
 
 const students: Record<string, StudentRecord> = {
   "4-2-13": rec("4-2-13", {
@@ -52,6 +52,27 @@ describe("교사 결과", () => {
     expect(lines[2]).toContain('"갈매기가 없어지면 게가 많아져서, ""미역""이 줄어요"');
     expect(lines[2]).toContain("물,분해자,🌿 미역 → 🦀 게");
     expect(lines[0]).toContain("숲5별,강1별,강2별,강3별,바다1별,바다2별,바다3별");
-    expect(lines[2].endsWith(",3,,,,,,,,,,,2,3")).toBe(true); // 숲1 별 3, 나머지 10칸 빈칸, 예측 2/3
+    expect(lines[2].endsWith(",3,,,,,,,,,,,2,3" + ",".repeat(11))).toBe(true); // 숲1 별 3, 나머지 10칸 빈칸, 예측 2/3, 첫·마지막 탐구와 먹이그물 칸은 비어 있음
+    expect(lines[0].endsWith("첫탐구정답,마지막탐구정답,숲그물완성,숲방향오류,숲잇기시도,강그물완성,강방향오류,강잇기시도,바다그물완성,바다방향오류,바다잇기시도")).toBe(true);
+  });
+
+  it("파일럿 칸: 마지막 먹이그물 시도, 한 번이라도 완성, 첫·마지막 탐구 예측 정답", () => {
+    const later = "2026-10-21T01:30:00.000Z";
+    const r = rec("4-2-1", {
+      builds: [
+        { theme: "forest", at, ok: 26, reversed: 5, wrong: 3, total: 32, done: true, hints: 1 },
+        { theme: "forest", at: later, ok: 10, reversed: 1, wrong: 0, total: 32, done: false, hints: 0 },
+      ],
+      predictions: [
+        { stageId: "forest-1", q: 1, correct: false, at },
+        { stageId: "forest-1", q: 2, correct: true, at },
+        { stageId: "forest-1", q: 3, correct: false, at },
+        { stageId: "forest-2", q: 1, correct: true, at: later },
+        { stageId: "forest-2", q: 2, correct: true, at: later },
+        { stageId: "forest-2", q: 3, correct: true, at: later },
+      ],
+    });
+    const line = toCsv({ "4-2-1": r }).trimEnd().split("\r\n")[1];
+    expect(line.endsWith(",4,6,1,3,1,1,11,,,,,,")).toBe(true); // 예측 4/6, 첫 1 → 마지막 3, 숲 완성 1·방향 오류 1·시도 11
   });
 });

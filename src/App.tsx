@@ -2,16 +2,19 @@ import { useEffect, useState } from "react";
 import type { Theme } from "./data/types";
 import { BuildScreen } from "./screens/BuildScreen";
 import { CardsScreen } from "./screens/CardsScreen";
+import { ChallengeScreen } from "./screens/ChallengeScreen";
 import { DiagnosticScreen } from "./screens/DiagnosticScreen";
 import { GuideScreen } from "./screens/GuideScreen";
 import { InvestigateScreen } from "./screens/InvestigateScreen";
 import { LabScreen } from "./screens/LabScreen";
 import { MainScreen } from "./screens/MainScreen";
+import { PilotScreen } from "./screens/PilotScreen";
 import { SortScreen } from "./screens/SortScreen";
 import { StageSelectScreen } from "./screens/StageSelectScreen";
 import { StartScreen } from "./screens/StartScreen";
 import { TeacherGate, TeacherScreen } from "./screens/TeacherScreen";
 import { TeamScreen } from "./screens/TeamScreen";
+import { ToolsScreen } from "./screens/ToolsScreen";
 import { TutorialScreen } from "./screens/TutorialScreen";
 import { useProgress } from "./store/progress";
 
@@ -25,6 +28,9 @@ export type Route =
   | "stages"
   | "lab"
   | "cards"
+  | "challenge"
+  | "tools"
+  | "pilot"
   | `${"build" | "stages" | "lab"}/${Theme}`
   | "diag"
   | "diag/pre"
@@ -38,7 +44,14 @@ const readRoute = (): Route => location.hash.replace(/^#\/?/, "") as Route;
 const go = (r: Route) => {
   location.hash = `/${r}`;
 };
-const TEACHER_ROUTES: Route[] = ["teacher", "team", "guide"];
+// 교사 메뉴(PIN 잠금) 화면
+const TEACHER_SCREENS: Partial<Record<Route, typeof TeacherScreen>> = {
+  teacher: TeacherScreen,
+  team: TeamScreen,
+  guide: GuideScreen,
+  tools: ToolsScreen,
+  pilot: PilotScreen,
+};
 
 export function App() {
   const [route, setRoute] = useState(readRoute);
@@ -49,10 +62,11 @@ export function App() {
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
 
-  if (TEACHER_ROUTES.includes(route)) {
+  const TeacherOnly = TEACHER_SCREENS[route];
+  if (TeacherOnly) {
     return (
       <TeacherGate go={go}>
-        {route === "team" ? <TeamScreen go={go} /> : route === "guide" ? <GuideScreen go={go} /> : <TeacherScreen go={go} />}
+        <TeacherOnly go={go} />
       </TeacherGate>
     );
   }
@@ -82,6 +96,8 @@ export function App() {
       return <TutorialScreen go={go} />;
     case "cards":
       return <CardsScreen go={go} />;
+    case "challenge":
+      return <ChallengeScreen go={go} />;
     case "diag":
     case "diag/pre":
     case "diag/post":

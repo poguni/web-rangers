@@ -93,3 +93,25 @@ export function findFreeSpot(p: Point, others: Point[]): Point {
   }
   return start;
 }
+
+// F3-10 먹이사슬 찾기: 내가 이은 화살표를 따라 생산자부터 한 줄씩 고름(교과서 그림의 빨간 점선)
+export const CHAIN_MISSION = 3; // 먹이사슬 3개 찾기
+export const CHAIN_MIN = 3; // 생물 3종 이상
+
+export type ChainStep = { kind: "ok"; ended: boolean } | { kind: "bad"; text: string };
+
+/** path 끝에 id를 이을 수 있는지. ended: 더 이을 화살표가 없어 한 줄이 끝남 */
+export function chainStep(species: Species[], linked: Set<string>, path: string[], id: string): ChainStep {
+  const s = species.find((x) => x.id === id)!;
+  if (path.length === 0) {
+    return s.role === "producer" ? { kind: "ok", ended: false } : { kind: "bad", text: "먹이사슬은 스스로 양분을 만드는 생산자부터 시작해요." };
+  }
+  const last = species.find((x) => x.id === path[path.length - 1])!;
+  if (!linked.has(linkKey(last.id, id))) {
+    return { kind: "bad", text: `${last.name} → ${s.name} 화살표가 없어요. 내가 이은 화살표를 따라가요.` };
+  }
+  const ended = ![...linked].some((k) => k.startsWith(`${id}>`));
+  return { kind: "ok", ended };
+}
+
+export const chainKey = (path: string[]) => path.join(">");

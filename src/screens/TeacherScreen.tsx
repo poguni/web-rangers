@@ -59,9 +59,9 @@ export function TeacherGate({ go, children }: { go: (r: Route) => void; children
             ))}
           </div>
           <div className="pin-keys">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "←"].map((k, i) =>
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "←"].map((k) =>
               k === "" ? (
-                <span key={i} />
+                <span key="blank" />
               ) : (
                 <button
                   key={k}
@@ -118,27 +118,35 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
           go("");
         }}
       >
-        <button className="btn ghost sm" onClick={() => go("team")}>
-          🏆 모둠 대항전
-        </button>
-        <button className="btn ghost sm" onClick={() => go("guide")}>
-          📘 교사 가이드
-        </button>
-        <button
-          className="btn ghost sm"
-          aria-pressed={cardsOpen}
-          onClick={() => {
-            setAllCardsOpen(!cardsOpen);
-            setCardsOpen(!cardsOpen);
-          }}
-        >
-          {cardsOpen ? "🔒 카드 다시 닫기" : "🔓 카드 모두 열기"}
-        </button>
         <button className="btn sm" disabled={rows.length === 0} onClick={exportCsv}>
           ⬇ CSV 내보내기
         </button>
       </AppBar>
       <main className="body scroll">
+        <nav className="teacher-tools" aria-label="교사 도구">
+          <button className="btn ghost sm" onClick={() => go("team")}>
+            🏆 모둠 대항전(전자칠판)
+          </button>
+          <button className="btn ghost sm" onClick={() => go("tools")}>
+            🧰 수업 코드·도전 코드
+          </button>
+          <button className="btn ghost sm" onClick={() => go("pilot")}>
+            📊 파일럿 결과 모아 보기
+          </button>
+          <button className="btn ghost sm" onClick={() => go("guide")}>
+            📘 교사 가이드
+          </button>
+          <button
+            className="btn ghost sm"
+            aria-pressed={cardsOpen}
+            onClick={() => {
+              setAllCardsOpen(!cardsOpen);
+              setCardsOpen(!cardsOpen);
+            }}
+          >
+            {cardsOpen ? "🔒 카드 다시 닫기" : "🔓 카드 모두 열기"}
+          </button>
+        </nav>
         <div className="stat-row">
           <div className="stat">
             <div className="v">{sum.students}명</div>

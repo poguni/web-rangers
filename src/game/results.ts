@@ -1,7 +1,8 @@
 // F10-2·F10-3 교사 결과: 학생별 요약과 CSV(여러 기기의 CSV를 이어 붙이면 학급 전체가 되는 형식)
 import { answerText, DIAGNOSTIC, INDIRECT_ITEM, isCorrect, WHY_ITEM, type DiagKind } from "../data/diagnostic";
 import { allStages } from "../data/stages";
-import { THEMES } from "./stage";
+import { THEME_IDS, THEMES } from "./stage";
+import type { Theme } from "../data/types";
 import { GUEST, type StudentRecord } from "../store/progress";
 
 /** 학년-반-번호 순서(손님 기록은 번호가 없어 결과에 넣지 않음) */
@@ -77,6 +78,21 @@ const localTime = (iso?: string) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 
+/** 테마의 마지막 먹이그물 만들기 시도와, 한 번이라도 완성했는지(PRD 14장 완료율·방향 오류) */
+export function lastBuild(r: StudentRecord, theme: Theme) {
+  const tries = r.builds.filter((b) => b.theme === theme);
+  const last = tries[tries.length - 1];
+  return last && { done: tries.some((b) => b.done), reversed: last.reversed, attempts: last.ok + last.reversed + last.wrong };
+}
+
+/** 처음 탐구한 사건과 마지막에 탐구한 사건의 예측 정답 수(3문항 중) */
+export function firstLastPrediction(r: StudentRecord) {
+  const order = [...new Set(r.predictions.map((p) => `${p.stageId}@${p.at}`))];
+  if (order.length < 2) return undefined;
+  const correctOf = (k: string) => r.predictions.filter((p) => `${p.stageId}@${p.at}` === k && p.correct).length;
+  return { first: correctOf(order[0]), last: correctOf(order[order.length - 1]) };
+}
+
 export function toCsv(students: Record<string, StudentRecord>): string {
   const diagCols = (k: DiagKind, label: string) => [...DIAGNOSTIC[k].map((_, i) => `${label}${i + 1}`), `${label}점수`, `${label}날짜`];
   const header = [
@@ -88,6 +104,9 @@ export function toCsv(students: Record<string, StudentRecord>): string {
     ...allStages.map((s) => `${THEMES[s.theme].name}${s.number}별`),
     "예측맞힘",
     "예측전체",
+    "첫탐구정답",
+    "마지막탐구정답",
+    ...THEME_IDS.flatMap((t) => [`${THEMES[t].name}그물완성`, `${THEMES[t].name}방향오류`, `${THEMES[t].name}잇기시도`]),
   ];
   const lines = sortedStudents(students).map((r) => {
     const diag = (k: DiagKind) => {
@@ -102,6 +121,12 @@ export function toCsv(students: Record<string, StudentRecord>): string {
       ...allStages.map((s) => r.stages[s.id]?.stars),
       row.predictCorrect,
       row.predictTotal,
+      firstLastPrediction(r)?.first,
+      firstLastPrediction(r)?.last,
+      ...THEME_IDS.flatMap((t) => {
+        const b = lastBuild(r, t);
+        return b ? [b.done ? 1 : 0, b.reversed, b.attempts] : [undefined, undefined, undefined];
+      }),
     ]
       .map(cell)
       .join(",");

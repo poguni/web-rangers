@@ -14,16 +14,39 @@ export interface DiagnosticResult {
   at: string;
 }
 
+/** 먹이그물 만들기 한 번(파일럿 지표: 완성률, 화살표 방향 오류) */
+export interface BuildAttempt {
+  theme: Theme;
+  at: string;
+  ok: number; // 맞게 이은 화살표
+  reversed: number; // 방향을 반대로 이은 시도
+  wrong: number; // 그 밖의 틀린 시도
+  total: number; // 정해진 관계 수
+  done: boolean; // 완성 기준(80%)에 닿았는지
+  hints: number;
+}
+
+/** F7-5 실험 기록장 한 줄 */
+export interface LabNote {
+  at: string;
+  theme: Theme;
+  setup: string; // "개구리 없애기 · 8년"
+  result: string; // "메뚜기 ▲ 129, 풀 ▼ 79"
+  memo: string;
+}
+
 export interface StudentRecord {
   key: string; // "4-2-13"(학년-반-번호) 또는 "guest"
   cards: string[]; // 얻은 생물 카드 id(F2-3)
   streak: number; // 지금까지 이어진 예측 정답 수(3번이면 카드 1장)
+  builds: BuildAttempt[];
+  notes: LabNote[];
   stages: Record<string, { stars: number; best: number }>;
   predictions: { stageId: string; q: 1 | 2 | 3; correct: boolean; at: string }[];
   diagnostic: { pre?: DiagnosticResult; post?: DiagnosticResult };
 }
 
-const emptyRecord = (key: string): StudentRecord => ({ key, cards: [], streak: 0, stages: {}, predictions: [], diagnostic: {} });
+const emptyRecord = (key: string): StudentRecord => ({ key, cards: [], streak: 0, builds: [], notes: [], stages: {}, predictions: [], diagnostic: {} });
 const EMPTY = emptyRecord("");
 
 function readCurrent(): string | null {
@@ -57,6 +80,9 @@ interface ProgressState {
   /** 예측 3번 연속 정답마다 카드 1장 */
   recordPredictions: (stageId: string, theme: Theme, correct: [boolean, boolean, boolean]) => string[];
   recordDiagnostic: (kind: "pre" | "post", answers: (number | string)[], score: number) => void;
+  recordBuild: (attempt: Omit<BuildAttempt, "at">) => void;
+  addNote: (note: Omit<LabNote, "at">) => void;
+  removeNote: (at: string) => void;
   clearAll: () => void;
 }
 
@@ -115,6 +141,9 @@ export const useProgress = create<ProgressState>()(
           update((r) => ({ ...r, streak, predictions: [...r.predictions, ...correct.map((c, i) => ({ stageId, q: (i + 1) as 1 | 2 | 3, correct: c, at }))] }));
           return cards ? grant({ theme, n: cards }) : [];
         },
+        recordBuild: (attempt) => update((r) => ({ ...r, builds: [...r.builds, { ...attempt, at: new Date().toISOString() }] })),
+        addNote: (note) => update((r) => ({ ...r, notes: [{ ...note, at: new Date().toISOString() }, ...r.notes] })),
+        removeNote: (at) => update((r) => ({ ...r, notes: r.notes.filter((n) => n.at !== at) })),
         recordDiagnostic: (kind, answers, score) =>
           update((r) => ({ ...r, diagnostic: { ...r.diagnostic, [kind]: { answers, score, at: new Date().toISOString() } } })),
         clearAll: () => {
@@ -127,11 +156,13 @@ export const useProgress = create<ProgressState>()(
       name: "webrangers.v1.students",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ students: s.students }),
-      version: 1,
-      // 0 → 1: 카드 수집(M5)을 더하며 cards·streak가 없던 기록을 채움
-      migrate: (old, version) => {
+      version: 2,
+      // 0 → 1: 카드 수집(M5)의 cards·streak, 1 → 2: 먹이그물 시도 기록·실험 기록장(M6)의 builds·notes를 채움
+      migrate: (old) => {
         const state = old as { students: Record<string, StudentRecord> };
-        if (version < 1) for (const r of Object.values(state.students)) Object.assign(r, { cards: r.cards ?? [], streak: r.streak ?? 0 });
+        for (const r of Object.values(state.students)) {
+          Object.assign(r, { cards: r.cards ?? [], streak: r.streak ?? 0, builds: r.builds ?? [], notes: r.notes ?? [] });
+        }
         return state as ProgressState;
       },
     },
