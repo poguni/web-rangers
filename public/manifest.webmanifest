@@ -1,0 +1,13 @@
+{
+  "name": "먹이그물 탐험대",
+  "short_name": "먹이그물",
+  "description": "초등 4학년 과학 '생물과 환경' 먹이그물 탐구",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FBF6EA",
+  "theme_color": "#24466B",
+  "lang": "ko",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

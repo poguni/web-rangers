@@ -3,10 +3,10 @@ import type { Route } from "../App";
 import { AppBar, Pic, starText } from "../components/common";
 import { forestStages } from "../data/stages";
 import { THEMES } from "../game/stage";
-import { useProgress } from "../store/progress";
+import { useStudent } from "../store/progress";
 
 export function StageSelectScreen({ go }: { go: (r: Route) => void }) {
-  const results = useProgress((s) => s.stages);
+  const results = useStudent().stages;
   const total = forestStages.reduce((sum, s) => sum + (results[s.id]?.stars ?? 0), 0);
   return (
     <div className="screen">

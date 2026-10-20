@@ -15,9 +15,17 @@ export default defineConfig({
     { name: "board-150-1280x720", use: { channel: "msedge", viewport: { width: 1280, height: 720 } } },
     { name: "board-100-1920x1080", use: { channel: "msedge", viewport: { width: 1920, height: 1080 } } },
   ],
-  webServer: {
-    command: "npm run dev -- --port 5173 --strictPort",
-    url: "http://localhost:5173",
-    reuseExistingServer: true,
-  },
+  webServer: [
+    {
+      command: "npm run dev -- --port 5173 --strictPort",
+      url: "http://localhost:5173",
+      reuseExistingServer: true,
+    },
+    {
+      // 오프라인 검사(offline.spec.ts)는 서비스 워커가 있는 배포판으로
+      command: "npm run build && npm run preview -- --port 4173 --strictPort",
+      url: "http://localhost:4173",
+      reuseExistingServer: true,
+    },
+  ],
 });

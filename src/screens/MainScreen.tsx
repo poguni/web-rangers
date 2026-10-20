@@ -1,6 +1,7 @@
-// 01 메인: 테마·모드 선택 (강·바다 테마와 사건 탐구·자유 실험실은 다음 단계에서 열림)
+// 01 메인: 테마·모드 선택 (강·바다 테마는 다음 단계에서 열림), 학생 번호·학생 바꾸기(F1-2)·진단
 import { AppBar } from "../components/common";
 import type { Route } from "../App";
+import { studentLabel, useProgress } from "../store/progress";
 
 const MODES: { route?: Route; icon: string; bg: string; title: string; desc: string }[] = [
   { route: "sort", icon: "🧺", bg: "var(--producer-2)", title: "분류 놀이", desc: "생산자·소비자·분해자 나누기" },
@@ -11,9 +12,16 @@ const MODES: { route?: Route; icon: string; bg: string; title: string; desc: str
 ];
 
 export function MainScreen({ go }: { go: (r: Route) => void }) {
+  const current = useProgress((s) => s.current)!;
+  const logout = useProgress((s) => s.logout);
   return (
     <div className="screen">
-      <AppBar />
+      <AppBar>
+        <span className="pill navy">👤 {studentLabel(current)}</span>
+        <button className="btn ghost sm" onClick={logout}>
+          학생 바꾸기
+        </button>
+      </AppBar>
       <main className="body">
         <div className="hello">
           <div className="badge" aria-hidden="true">
@@ -23,6 +31,10 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
             <h1>탐험대원, 오늘은 숲을 탐험해 볼까요?</h1>
             <div className="sub">생물 카드를 화살표로 이어 먹이그물을 만들어 보세요.</div>
           </div>
+          <span className="sp" />
+          <button className="btn ghost" onClick={() => go("diag")}>
+            📝 진단 문제
+          </button>
         </div>
 
         <div className="themes">

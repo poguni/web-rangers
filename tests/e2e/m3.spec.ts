@@ -1,6 +1,9 @@
 // M3 사건 탐구·자유 실험실 화면 흐름 (1280×690 크롬, 1280×720·1920×1080 엣지)
 import { expect, test, type Page } from "@playwright/test";
 
+// 번호 입력(시작 화면)은 m4.spec.ts에서 검사하고, 여기서는 손님으로 바로 시작
+test.beforeEach(({ page }) => page.addInitScript(() => sessionStorage.setItem("webrangers.v1.current", "guest")));
+
 const fits = (page: Page) => page.evaluate(() => document.documentElement.scrollHeight <= document.documentElement.clientHeight);
 const noPageNumbers = async (page: Page) => expect(await page.locator("body").innerText()).not.toMatch(/\d+\s*(~\s*\d+\s*)?쪽/);
 const step = (page: Page, n: number) => (async () => {

@@ -9,7 +9,7 @@ import { applyAction, unavailableReason } from "../engine/actions";
 import { explainAll, influencePath, yearNotes } from "../engine/explain";
 import { resolveTargets } from "../engine/events";
 import { runScenario } from "../engine/run";
-import { toDisplay } from "../engine/scoring";
+import { POINTS, toDisplay } from "../engine/scoring";
 import { AFTER_YEARS, finalStars, prepareStage, scoreAnswers, THEMES, YEARS, type Answer, type Answers, type PreparedStage } from "../game/stage";
 import { useProgress } from "../store/progress";
 import { josa } from "../utils/korean";
@@ -56,6 +56,7 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
   const [answers, setAnswers] = useState<Partial<Answers>>({});
   const [action, setAction] = useState<number | null>(null);
   const recordStage = useProgress((s) => s.recordStage);
+  const recordPredictions = useProgress((s) => s.recordPredictions);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const ready = answers.q1 !== undefined && answers.q2 !== undefined && answers.q3 !== undefined;
@@ -121,7 +122,15 @@ function Investigation({ stage, go }: { stage: Stage; go: (r: Route) => void }) 
                 <FoodWebBoard svgRef={svgRef} label={`${event.title}: 사건이 바로 건드린 생물이 깜빡이는 먹이그물`} {...webAt(model, theme.layout, { hot, decomposers: event.type === "decomposer" })} />
               </div>
             </div>
-            <Prediction p={p} answers={answers} setAnswers={setAnswers} onSubmit={() => setPhase("observe")} />
+            <Prediction
+              p={p}
+              answers={answers}
+              setAnswers={setAnswers}
+              onSubmit={() => {
+                recordPredictions(stage.id, [score!.q1 > 0, score!.q2 === POINTS.q2, score!.q3 > 0]);
+                setPhase("observe");
+              }}
+            />
           </div>
         </main>
       )}

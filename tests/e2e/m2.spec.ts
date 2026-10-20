@@ -2,6 +2,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // 피드백 띠(화면 읽기용 role=status 안에 있음)
+// 번호 입력(시작 화면)은 m4.spec.ts에서 검사하고, 여기서는 손님으로 바로 시작
+test.beforeEach(({ page }) => page.addInitScript(() => sessionStorage.setItem("webrangers.v1.current", "guest")));
+
 const feedback = (page: Page) => page.locator('[role="status"] .toast');
 
 const noPageScroll = (page: Page) =>
