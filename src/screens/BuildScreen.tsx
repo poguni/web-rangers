@@ -58,6 +58,9 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
   const [chainMode, setChainMode] = useState(false);
   // 판에서 끌기: 화살표 잇기(기본) 또는 카드 옮기기
   const [moveMode, setMoveMode] = useState(false);
+  // 되돌리기: 판을 바꾸는 동작(놓기·잇기·옮기기·정리하기) 바로 전의 카드 위치와 화살표
+  const [history, setHistory] = useState<{ placed: Record<string, Point>; linked: Set<string> }[]>([]);
+  const remember = () => setHistory((h) => [...h, { placed, linked }]);
   const [path, setPath] = useState<string[]>([]);
   const [found, setFound] = useState<string[]>([]);
   // 파일럿 지표용 시도 기록(화면을 나갈 때 한 번 저장)
@@ -76,6 +79,7 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
 
   function place(id: string, p: Point) {
     const first = Object.keys(placed).length === 0;
+    remember();
     setPlaced((prev) => ({ ...prev, [id]: findFreeSpot(p, Object.values(prev)) }));
     setSelected(null);
     if (first) setToast({ kind: "info", title: "카드를 더 놓고 화살표로 이어 보세요.", text: "화살표는 먹히는 생물 → 먹는 생물로 그려요." });
@@ -90,6 +94,7 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
   );
 
   function move(id: string, p: Point) {
+    remember();
     setPlaced((prev) => {
       const others = Object.entries(prev).flatMap(([k, q]) => (k === id ? [] : [q]));
       return { ...prev, [id]: findFreeSpot(p, others) };
@@ -118,6 +123,7 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
     if (r.kind === "ok") {
       const key = linkKey(from, to);
       const next = new Set(linked).add(key);
+      remember();
       setLinked(next);
       setFresh(key);
       tally.current.ok = next.size;
@@ -140,6 +146,29 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
       setToast({ kind: "bad", title: r.title, text: r.text });
     }
   }
+
+  function undo() {
+    const last = history.at(-1);
+    if (!last || chainMode) return;
+    setHistory((h) => h.slice(0, -1));
+    setPlaced(last.placed);
+    setLinked(last.linked);
+    setFresh(null);
+    tally.current.ok = last.linked.size; // 이미 받은 보상·힌트 감점은 그대로
+    setToast({ kind: "info", title: "한 단계 되돌렸어요.", text: history.length > 1 ? "더 누르면 그 전으로 돌아가요." : "처음 상태예요." });
+  }
+
+  // Ctrl+Z(맥은 ⌘+Z)로도 되돌리기
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undo();
+      }
+    };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  });
 
   function startChain() {
     setChainMode(true);
@@ -200,6 +229,7 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
   }
 
   function arrange() {
+    remember();
     setPlaced((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, layout[id]])));
     setToast({ kind: "info", title: "정리했어요.", text: "먹히는 생물은 아래, 먹는 생물은 위에 있어요." });
   }
@@ -269,6 +299,9 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
               </button>
             </div>
           )}
+          <button className="btn ghost sm" onClick={undo} disabled={history.length === 0 || chainMode} title="Ctrl+Z">
+            ↩ 되돌리기
+          </button>
           <button className="btn ghost sm" onClick={showHint} disabled={linked.size === TOTAL}>
             💡 힌트 (별 −1)
           </button>

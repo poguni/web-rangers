@@ -7,7 +7,7 @@ test("한 번 접속한 뒤에는 인터넷 없이도 열려요", async ({ page,
   await page.evaluate(() => navigator.serviceWorker.ready); // 설치 = 모든 파일 저장 완료
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByText("먹이그물 탐험대에 온 것을 환영해요!")).toBeVisible();
+  await expect(page.getByText("탐험대원 번호를 써 주세요")).toBeVisible();
   await page.getByRole("button", { name: "손님으로 시작" }).click();
   await page.getByRole("button", { name: /먹이그물 만들기/ }).click();
   await expect(page.locator(".web")).toBeVisible();

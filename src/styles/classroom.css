@@ -6,7 +6,7 @@
 .screen.start { background-color: var(--paper); background-size: cover; background-position: center; }
 .start .appbar { background: rgba(255, 253, 247, 0.75); }
 /* 배경 그림 위쪽 가운데의 제목 자리를 비워 두려고 카드를 아래쪽에 둠 */
-.start .body { align-items: center; justify-content: center; padding-top: 22vh; position: relative; }
+.start .body { align-items: center; justify-content: center; padding-top: 25vh; position: relative; }
 .start-card { width: min(560px, 100%); display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 28px 32px; text-align: center; background: rgba(255, 253, 247, 0.94); }
 .start-card h1 { font-size: 26px; margin: 0; }
 .start-card .sub { margin: 0; font-size: 15px; }

@@ -1,5 +1,5 @@
-// 07 카드 도감(F2): 테마별 수집 현황, 얻지 못한 카드는 그림자, 카드 상세(사는 곳·먹이·나를 먹는 동물·한 줄 사실)
-import { useState } from "react";
+// 07 카드 도감(F2): 테마별 수집 현황, 얻지 못한 카드는 카드 뒷면, 카드 상세는 뒤집는 큰 카드(앞: 512px 그림, 뒤: 사는 곳·먹이·나를 먹는 동물·특징)
+import { useState, type CSSProperties } from "react";
 import type { Route } from "../App";
 import { AppBar, Pic, RoleBadge } from "../components/common";
 import type { Species, Theme } from "../data/types";
@@ -73,7 +73,7 @@ export function CardsScreen({ go }: { go: (r: Route) => void }) {
                 카드를 누르면 자세히 볼 수 있어요.
               </p>
             ) : has(card.id) ? (
-              <Detail s={card} />
+              <Detail key={card.id} s={card} />
             ) : (
               <p className="sub" style={{ margin: "auto", textAlign: "center" }}>
                 아직 얻지 못한 카드예요.
@@ -88,35 +88,47 @@ export function CardsScreen({ go }: { go: (r: Route) => void }) {
   );
 }
 
+/** 큰 카드: 누르면 뒤집혀 사는 곳·특징이 나옴. 다른 카드를 고르면(key가 바뀌어) 앞면부터 */
 function Detail({ s }: { s: Species }) {
+  const [back, setBack] = useState(false);
   const prey = preyNames(s);
   const predators = predatorNames(s);
   const food = s.role === "producer" ? "햇빛을 받아 스스로 양분을 만들어요." : s.role === "decomposer" ? "죽은 생물과 배출물을 분해해요." : prey.join(", ");
   return (
     <>
-      <div className="detail-head">
-        <span className="e" aria-hidden="true">
-          <Pic image={s.image} />
-        </span>
-        <div>
-          <h2>{s.name}</h2>
-          <RoleBadge role={s.role} />
+      <div className={`flip-card${back ? " back" : ""}`} onClick={() => setBack(!back)}>
+        <div className="flip-inner" style={{ "--c": `var(--${s.role})` } as CSSProperties}>
+          <div className="face front" aria-hidden={back}>
+            <div className="big">
+              <Pic image={s.image} big />
+            </div>
+            <h2>{s.name}</h2>
+            <RoleBadge role={s.role} />
+            {s.tags?.map((t) => (
+              <div key={t} className="special-note">
+                <b>{SPECIAL[t].label}</b> {SPECIAL[t].text}
+              </div>
+            ))}
+          </div>
+          <div className="face back" aria-hidden={!back}>
+            <h2>{s.name}</h2>
+            <dl className="facts">
+              <dt>사는 곳</dt>
+              <dd>{s.habitat}</dd>
+              <dt>{s.role === "consumer" ? "먹이" : "양분"}</dt>
+              <dd>{food}</dd>
+              <dt>나를 먹는 동물</dt>
+              <dd>{predators.length ? predators.join(", ") : "이 먹이그물에는 없어요."}</dd>
+            </dl>
+            <p className="fact">
+              <b>특징</b> {s.fact}
+            </p>
+          </div>
         </div>
       </div>
-      {s.tags?.map((t) => (
-        <div key={t} className="special-note">
-          <b>{SPECIAL[t].label}</b> {SPECIAL[t].text}
-        </div>
-      ))}
-      <dl className="facts">
-        <dt>사는 곳</dt>
-        <dd>{s.habitat}</dd>
-        <dt>{s.role === "consumer" ? "먹이" : "양분"}</dt>
-        <dd>{food}</dd>
-        <dt>나를 먹는 동물</dt>
-        <dd>{predators.length ? predators.join(", ") : "이 먹이그물에는 없어요."}</dd>
-      </dl>
-      <p className="fact">💡 {s.fact}</p>
+      <button className="btn ghost sm" aria-pressed={back} onClick={() => setBack(!back)}>
+        🔄 {back ? "앞면 보기" : "뒤집어서 사는 곳·특징 보기"}
+      </button>
     </>
   );
 }

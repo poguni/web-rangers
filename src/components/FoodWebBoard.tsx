@@ -2,7 +2,7 @@
 // onLink가 있으면 잇기 판, onMove가 있으면 카드 옮기기 판, onNodeTap만 있으면 생물 고르기 판(자유 실험실), 모두 없으면 보기 전용(관찰)
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type RefObject } from "react";
 import { BOARD, type Point } from "../game/build";
-import { imageUrl } from "../data/images";
+import { BIG_SCREEN, imageUrl } from "../data/images";
 import type { Role } from "../data/types";
 
 export interface BoardNode {
@@ -69,6 +69,7 @@ export function FoodWebBoard({ nodes: given, edges, label, svgRef, onLink, onNod
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const toBoard = (x: number, y: number) => clientToBoard(svgRef.current!, x, y);
   const interactive = Boolean(onLink || onNodeTap || onMove);
+  const picSize = matchMedia(BIG_SCREEN).matches ? 512 : 256; // SVG <image>는 srcset이 없어 같은 조건을 직접 확인
 
   function tapNode(id: string) {
     if (dropping.current || onMove) return;
@@ -222,7 +223,7 @@ export function FoodWebBoard({ nodes: given, edges, label, svgRef, onLink, onNod
               <circle className="hit" r={R + 12} />
               <circle className="ring" r={40} />
               <circle className="bg" r={R} stroke={ROLE_COLOR[n.role]} />
-              <image className="emo" href={imageUrl(n.image)} x={-27} y={-27} width={54} height={54} />
+              <image className="emo" href={imageUrl(n.image, picSize)} x={-27} y={-27} width={54} height={54} />
               <text className="nm" y={50}>
                 {n.name}
               </text>

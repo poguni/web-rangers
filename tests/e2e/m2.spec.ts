@@ -22,6 +22,18 @@ test.describe("화면이 스크롤 없이 들어가고, 교과서 쪽수가 없�
   }
 });
 
+test("전자칠판(너비 1600px 이상)에서는 512px 그림, 크롬북에서는 256px 그림을 써요", async ({ page }) => {
+  await page.goto("/#/");
+  const size = page.viewportSize()!.width >= 1600 ? "512" : "256";
+  const pic = page.locator(".theme .art img.pic").first();
+  await expect.poll(() => pic.evaluate((img: HTMLImageElement) => img.complete && img.currentSrc)).toContain(`-${size}.webp`);
+  // 먹이그물 판(SVG)도 같은 크기
+  await page.goto("/#/build");
+  await page.locator(".tray-list .mini-card").first().click();
+  await page.locator("svg.web").click();
+  await expect(page.locator("svg.web image.emo").first()).toHaveAttribute("href", new RegExp(`-${size}\\.webp$`));
+});
+
 test("머리말의 앱 아이콘·이름을 누르면 메인 화면으로 가요", async ({ page }) => {
   await page.goto("/#/build/river");
   await page.getByRole("link", { name: "먹이그물 탐험대" }).click();
@@ -119,6 +131,40 @@ test.describe("먹이그물 만들기", () => {
     await page.waitForTimeout(500); // 이동 효과 0.4초
     const y = (id: string) => page.locator(`[data-node="${id}"]`).evaluate((g) => g.getBoundingClientRect().y);
     expect(await y("forest.grass")).toBeGreaterThan(await y("forest.grasshopper"));
+  });
+
+  test("되돌리기: 마지막으로 이은 화살표·옮긴 카드·놓은 카드를 차례로 되돌려요 (Ctrl+Z 포함)", async ({ page }) => {
+    await page.goto("/#/build");
+    const undo = page.getByRole("button", { name: /되돌리기/ });
+    await expect(undo).toBeDisabled();
+    await placeByTap(page, "풀", 0.2, 0.8);
+    await placeByTap(page, "메뚜기", 0.5, 0.8);
+    await page.locator('[data-node="forest.grass"]').click();
+    await page.locator('[data-node="forest.grasshopper"]').click();
+    await expect(page.locator(".progress")).toContainText("1 / 32");
+
+    // 메뚜기를 옮김
+    await page.getByRole("button", { name: "✋ 옮기기" }).click();
+    const pos = () => page.locator('[data-node="forest.grasshopper"]').evaluate((g) => g.parentElement!.style.transform);
+    const placedAt = await pos();
+    const b = (await page.locator('[data-node="forest.grasshopper"] circle.bg').boundingBox())!;
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y - 150, { steps: 8 });
+    await page.mouse.up();
+    expect(await pos()).not.toBe(placedAt);
+
+    await undo.click(); // 옮기기 되돌리기
+    expect(await pos()).toBe(placedAt);
+    await expect(page.locator(".progress")).toContainText("1 / 32");
+    await page.keyboard.press("Control+z"); // 화살표 되돌리기
+    await expect(page.locator(".progress")).toContainText("0 / 32");
+    await expect(page.locator("svg.web .edge.ok")).toHaveCount(0);
+    await undo.click(); // 메뚜기 놓기 되돌리기 → 보관함으로
+    await expect(page.locator('[data-node="forest.grasshopper"]')).toHaveCount(0);
+    await expect(page.locator(".tray-list .mini-card", { hasText: "메뚜기" })).toBeVisible();
+    await undo.click();
+    await expect(undo).toBeDisabled();
   });
 
   test("옮기기 모드에서는 끌면 카드가 움직이고 화살표는 생기지 않아요", async ({ page }) => {

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>먹이그물 탐험대(Web Rangers) 개발 보고서 v2</title>
+<style>
+  :root { --sidebar-w: 260px; --accent: #4F46E5; --text: #1f2430; --muted: #6b7280; --bg: #ffffff; --panel: #f7f7fb; --border: #e5e7eb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif; color: var(--text); background: var(--bg); }
+  .layout { display: flex; min-height: 100vh; }
+  nav.sidebar { position: sticky; top: 0; align-self: flex-start; width: var(--sidebar-w); flex-shrink: 0; height: 100vh; overflow-y: auto; padding: 24px 16px; background: var(--panel); border-right: 1px solid var(--border); }
+  nav.sidebar h1 { font-size: 15px; margin: 0 0 4px; }
+  nav.sidebar .meta { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  nav.sidebar a { display: block; padding: 7px 10px; margin: 2px 0; font-size: 13.5px; color: var(--text); text-decoration: none; border-radius: 8px; }
+  nav.sidebar a:hover { background: #eceafd; }
+  nav.sidebar a.active { background: var(--accent); color: #fff; }
+  main { flex: 1; min-width: 0; padding: 40px 48px; max-width: 860px; }
+  main section { margin-bottom: 48px; scroll-margin-top: 24px; }
+  main h2 { font-size: 22px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+  main h3 { font-size: 17px; color: var(--accent); }
+  main table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  main th, main td { border: 1px solid var(--border); padding: 8px 10px; font-size: 14px; text-align: left; }
+  main code { background: #f1f1f5; padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+  main pre { background: #1f2430; color: #eee; padding: 14px; border-radius: 8px; overflow-x: auto; }
+  @media (max-width: 800px) {
+    .layout { flex-direction: column; }
+    nav.sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <h1>먹이그물 탐험대(Web Rangers)</h1>
+    <div class="meta">개발 보고서 v2 · 2026-10-26 (내용 수정 2026-10-27)</div>
+    <a href="#sec-1">1. 개요</a>
+    <a href="#sec-2">2. 목표 및 배경</a>
+    <a href="#sec-3">3. 주요 기능</a>
+    <a href="#sec-4">4. 기술 스택 및 아키텍처</a>
+    <a href="#sec-5">5. 개발 과정 (타임라인)</a>
+    <a href="#sec-6">6. 주요 의사결정과 이유</a>
+    <a href="#sec-7">7. 문제 해결 기록</a>
+    <a href="#sec-8">8. 보안/성능 고려사항</a>
+    <a href="#sec-9">9. 테스트 및 검증</a>
+    <a href="#sec-10">10. 배포</a>
+    <a href="#sec-11">11. 알려진 한계</a>
+    <a href="#sec-12">12. 향후 개선 아이디어 / 업데이트 계획</a>
+    <a href="#sec-13">13. 이전 버전(v1) 이후 변경 사항</a>
+  </nav>
+  <main id="content">
+    <h1>먹이그물 탐험대(Web Rangers) 개발 보고서 (v2)</h1>
+    <ul><li><strong>작성일</strong>: 2026-10-26 (내용 수정 2026-10-27)</li><li><strong>버전</strong>: v2</li><li><strong>이전 버전</strong>: v1 (docs/Development_Report_v1.md)</li><li><strong>저장소</strong>: <a href="https://github.com/poguni/web-rangers">https://github.com/poguni/web-rangers</a></li></ul>
+    <section id="sec-1"><h2>1. 개요</h2>
+<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>앱 이름</td><td>먹이그물 탐험대(Web Rangers)</td></tr><tr><td>한 줄 소개</td><td>먹이그물을 직접 잇고, 사건이 일어났을 때 생물 수가 어떻게 변할지 <strong>예측 → 관찰 → 설명</strong>하는 초등 과학 웹앱</td></tr><tr><td>대상 사용자</td><td>초등 4학년 학생(크롬북), 과학 수업 교사(전자칠판)</td></tr><tr><td>교육과정</td><td>초등 4학년 2학기 과학 2단원 '생물과 환경'</td></tr><tr><td>개발 기간</td><td>2026-10-19 ~ 2026-10-26 (기획 문서 → M1~M6 → 그림 연결·사용성 개선 → 시작 화면 새 디자인)</td></tr><tr><td>규모</td><td>소스 약 7,300줄(TypeScript/TSX), 단위 테스트 196개, e2e 테스트 118개(3가지 화면 크기)</td></tr></tbody></table>
+</section>
+<section id="sec-2"><h2>2. 목표 및 배경</h2>
+<p>먹이사슬·먹이그물 수업은 보통 "누가 누구를 먹는가"를 화살표로 잇는 데서 끝납니다. 하지만 교과서는 "개구리가 사라지면 어떻게 될까?", "분해자가 사라지면?"처럼 <strong>한 생물의 변화가 연결된 다른 생물에게 퍼지는 과정(간접 효과)</strong> 을 묻습니다. 종이 카드와 털실 활동으로는 시간에 따른 변화를 눈으로 보기 어렵습니다.</p>
+<p>이 앱은 학생을 생태계를 지키는 <strong>탐험대원</strong>으로 설정하고 다음을 목표로 합니다.</p>
+<ul><li>생물·비생물 요소, 생산자·소비자·분해자를 구분합니다.</li><li>먹히는 생물 → 먹는 생물로 화살표를 잇고, 먹이사슬과 먹이그물의 차이를 설명합니다.</li><li>사건(생물이 사라짐, 가뭄, 외래종 등) 뒤의 변화를 먼저 예측하고 시뮬레이션으로 확인합니다.</li><li>"먹이그물이 복잡하면 생태계가 안정적"이라는 교과서 결론을 직접 비교해 봅니다.</li><li>설치·로그인 없이 주소 하나로 열리고, 학교 와이파이가 끊겨도 동작합니다.</li></ul>
+</section>
+<section id="sec-3"><h2>3. 주요 기능</h2>
+<h3>학생 활동</h3>
+<ul><li><strong>시작과 학생 식별</strong>: 학년·반·번호를 입력란 3칸에 숫자로 씀(이름 없음). 칸을 채우면 다음 칸으로 넘어가고, 범위 밖 수는 바로 알려 줌. 손님으로 시작 가능. 숲·강·바다가 이어진 배경 그림.</li><li><strong>접속 QR 코드</strong>: 시작 화면 오른쪽 아래의 작은 QR을 누르면 화면 가운데에 크게 나옴. 교사 메뉴의 "📱 접속 QR 코드" 버튼으로도 띄울 수 있음. 학생이 디벗·크롬북 카메라로 찍어 바로 접속.</li><li><strong>분류 놀이</strong>: 생산자·소비자·분해자 나누기, 생물·비생물 요소 나누기(끌어서 넣기·눌러서 넣기).</li><li><strong>먹이사슬 배우기(튜토리얼)</strong>: 풀 → 메뚜기 → 개구리를 이으며 화살표 방향의 뜻을 배움.</li><li><strong>먹이그물 만들기</strong>: 숲 14종(+분해자 2종) 카드를 판에 놓고 화살표 32개를 잇기. 즉시 판정, 방향 반대 안내, 힌트(별 −1), 정리하기(교과서 배치), 분해자 연결 보기, 먹이사슬 3개 찾기 미션, PNG 그림 저장, <strong>카드 옮기기 모드</strong>, <strong>되돌리기</strong>(↩ 버튼·Ctrl+Z로 놓기·잇기·옮기기·정리하기를 한 단계씩 취소).</li><li><strong>사건 탐구</strong>: 숲 5개·강 3개·바다 3개 스테이지. 사건 카드 → 예측 3문항(변화 방향, 가장 크게 변할 생물, 까닭) → 8년 관찰 → 채점·설명 → 관리인 행동(되살리기·보호 구역·외래종 잡기 등) → 별.</li><li><strong>자유 실험실</strong>: 생물을 마음대로 없애거나 늘려 보고 결과를 실험 기록장에 남김.</li><li><strong>카드 도감</strong>: 활동 보상으로 생물 카드를 모음(못 얻은 카드는 카드 뒷면). 카드를 고르면 오른쪽에 큰 카드가 나오고, 누르면 3D로 뒤집힘(앞: 512px 그림·이름·역할, 뒤: 사는 곳·먹이·나를 먹는 동물·특징).</li><li><strong>진단 문제</strong>: 사전·사후 진단(5문항 채점 + 서술형 1문항).</li></ul>
+<h3>교실·교사 기능</h3>
+<ul><li><strong>모둠 대항전(전자칠판 진행형)</strong>: 모둠별 예측을 교사가 입력하고 함께 시뮬레이션을 봄.</li><li><strong>도전 코드 대항전</strong>: 코드 하나로 같은 3라운드를 각 기기에서 풀고, 확인 글자(3음절)로 점수를 검증.</li><li><strong>수업 코드</strong>: 테마와 활동을 묶은 코드로 그날 수업할 활동만 열어 줌.</li><li><strong>교사 메뉴</strong>: 결과 보기, CSV 내보내기, 교사 가이드, 수업 도구, 파일럿 결과 모아 보기(여러 기기 CSV 병합, PRD 성공 지표와 비교).</li><li><strong>오프라인</strong>: 한 번 접속하면 그림·글꼴까지 기기에 저장되어 인터넷 없이 동작.</li></ul>
+</section>
+<section id="sec-4"><h2>4. 기술 스택 및 아키텍처</h2>
+<table><thead><tr><th>영역</th><th>선택</th><th>이유</th></tr></thead><tbody><tr><td>프레임워크</td><td>React 19 + TypeScript 5.9 + Vite 8</td><td>타입으로 생물 데이터 오류를 줄이고 빠르게 개발</td></tr><tr><td>상태 관리</td><td>Zustand(+ localStorage)</td><td>코드가 짧고, 학생 번호별 진행 상황을 기기에 저장</td></tr><tr><td>먹이그물 판</td><td>SVG + Pointer Events 직접 구현</td><td>마우스·터치패드·터치를 한 코드로. 끌어서 잇기·눌러서 잇기·카드 옮기기</td></tr><tr><td>시뮬레이션</td><td>순수 TypeScript 엔진(<code>src/engine</code>)</td><td>화면과 분리해 Vitest로 검증, 같은 입력이면 같은 결과(대항전 공정성)</td></tr><tr><td>오프라인</td><td>직접 만든 Vite 플러그인이 <code>sw.js</code> 생성</td><td>빌드 결과물 + 앱이 쓰는 그림 목록을 한 번에 저장(precache)</td></tr><tr><td>글꼴</td><td>@fontsource(주아, Noto Sans KR)</td><td>외부 CDN 없이 오프라인에서도 같은 글꼴</td></tr><tr><td>QR 코드</td><td>qrcode-generator(의존성 없음) → SVG로 직접 그림</td><td>외부 QR 서비스 없이 기기 안에서 만들어 오프라인에서도 표시</td></tr><tr><td>그림</td><td>AI 생성 → WebP(256·512px, 사건·행동 800×600, 배경 1920×1080). <code>srcset</code>으로 전자칠판·고해상도 화면에서는 512px</td><td>크롬북에서는 가볍게, 전자칠판에서는 선명하게</td></tr><tr><td>테스트</td><td>Vitest(엔진·데이터·출제 품질), Playwright(1280×690·1280×720·1920×1080)</td><td>교실 기기 세 가지 화면 크기를 모두 검사</td></tr><tr><td>배포</td><td>GitHub Actions → GitHub Pages</td><td>main에 올리면 테스트 → 빌드 → 배포</td></tr></tbody></table>
+<h3>폴더 구조</h3>
+<table><thead><tr><th>폴더</th><th>역할</th></tr></thead><tbody><tr><td><code>src/data</code></td><td>생물·사건·스테이지·진단·분류 놀이 데이터, 그림 주소 규칙(<code>images.ts</code>)</td></tr><tr><td><code>src/engine</code></td><td>자동 보정(<code>calibrate</code>), 턴 계산(<code>simulate</code>), 사건·행동 효과, 채점, 설명 문장</td></tr><tr><td><code>src/game</code></td><td>화면과 테스트가 함께 쓰는 게임 규칙(먹이그물 판정, 스테이지 준비, 대항전, 도전 코드, 파일럿 집계)</td></tr><tr><td><code>src/components</code></td><td>먹이그물 판(<code>FoodWebBoard</code>), 공통 UI(<code>Pic</code>, <code>AppBar</code> 등), 관찰 화면 부품, 접속 QR 코드(<code>qr.tsx</code>)</td></tr><tr><td><code>src/screens</code></td><td>화면 17개(메인·분류·튜토리얼·만들기·사건 탐구·실험실·도감·진단·교사 화면 등)</td></tr><tr><td><code>src/store</code></td><td>학생 진행 상황, 설정</td></tr><tr><td><code>tests</code></td><td>data·engine·game·store 단위 테스트, e2e 6개 묶음</td></tr></tbody></table>
+<h3>데이터 흐름</h3>
+<ol><li>데이터에는 <strong>먹이 관계와 선호도</strong>만 적습니다.</li><li>엔진이 "모든 생물이 100일 때 변화 0"이 되도록 계수를 자동 보정합니다.</li><li>사건·행동을 적용해 8년을 계산하고, 매년 변화의 가장 큰 까닭을 기록합니다.</li><li>기록을 거꾸로 따라가 "개구리 사라짐 → 메뚜기 늘어남 → 풀 줄어듦" 같은 <strong>영향이 퍼진 길</strong>을 만들고, 질문 3 정답과 설명 문장에 씁니다.</li></ol>
+</section>
+<section id="sec-5"><h2>5. 개발 과정 (타임라인)</h2>
+<table><thead><tr><th>날짜</th><th>커밋</th><th>내용</th></tr></thead><tbody><tr><td>10-19</td><td><code>94b098b</code> docs</td><td>기획서(PRD), 디자인 가이드, 화면 시안, 그림 생성 프롬프트(79장)</td></tr><tr><td>10-19</td><td><code>8030664</code> M1</td><td>숲 먹이그물 데이터(교과서 49쪽 32개 관계)와 시뮬레이션 엔진, 검증 테스트</td></tr><tr><td>10-19</td><td><code>7a7b335</code> M2</td><td>메인·분류 놀이·먹이사슬 배우기·먹이그물 만들기 화면</td></tr><tr><td>10-19</td><td><code>3d86059</code> fix</td><td>화면에서 교과서 쪽수 표시 제거(학교마다 교과서가 다름)</td></tr><tr><td>10-19</td><td><code>ea508d2</code> M3</td><td>사건 탐구(예측·관찰·설명·관리인 행동)와 자유 실험실</td></tr><tr><td>10-20</td><td><code>21d3b76</code> M4</td><td>학생 번호, 사전·사후 진단, 교사 결과·CSV, 모둠 대항전, 오프라인(PWA)</td></tr><tr><td>10-20</td><td><code>f4de9dc</code> M5</td><td>강·바다 콘텐츠(생물·사건·스테이지), 카드 수집, 생물·비생물 분류</td></tr><tr><td>10-21</td><td><code>c0dadf1</code> M6</td><td>도전 코드 대항전, 수업 코드, 실험 기록장, 먹이사슬 찾기 미션, PNG 저장, 파일럿 도구</td></tr><tr><td>10-21</td><td><code>c660539</code> ci</td><td>GitHub Pages 자동 배포</td></tr><tr><td>10-21</td><td><code>15ed294</code> fix</td><td>저장소에서 교과서 PDF 삭제</td></tr><tr><td>10-26</td><td><code>df87745</code> feat</td><td>이모지 자리 표시를 실제 WebP 그림으로 교체(생물·사건·행동·UI 그림, 사건 탐구 보기 기호)</td></tr><tr><td>10-26</td><td><code>e4802a7</code> fix</td><td>먹이그물 만들기에 카드 옮기기 모드 추가</td></tr><tr><td>10-26</td><td><code>a1358b5</code> fix</td><td>머리말 앱 아이콘·이름을 누르면 메인 화면으로 이동</td></tr><tr><td>10-26</td><td><code>4eede53</code> docs</td><td>개발 보고서 v1. 시작 화면 새 디자인(입력란 3칸, 접속 QR 코드)도 이 커밋에 함께 들어감</td></tr><tr><td>10-26</td><td>(커밋 전)</td><td>시작 화면 배경 그림(<code>ui-bg-start.webp</code>) 적용, 카드 위치 조정, 카드 제목을 "탐험대원 번호를 써 주세요"로 변경, 교사 메뉴에 접속 QR 코드 버튼 추가</td></tr><tr><td>10-27</td><td>(커밋 전)</td><td>전자칠판용 512px 그림(<code>srcset</code>), 먹이그물 만들기 되돌리기, 카드 도감 뒤집는 큰 카드</td></tr></tbody></table>
+<h3>단계별 요약</h3>
+<ul><li><strong>M1(엔진 먼저)</strong>: 화면 없이 데이터와 엔진을 만들고, 교과서 정답("개구리 사라짐 → 메뚜기 늘어남 → 풀 줄어듦")이 테스트로 성립할 때까지 상수를 조정했습니다.</li><li><strong>M2~M3(핵심 활동)</strong>: 먹이그물 만들기와 사건 탐구라는 두 축을 완성했습니다. 스테이지 질문이 애매하지 않은지 테스트가 자동으로 검사합니다.</li><li><strong>M4(교실)</strong>: 공용 크롬북과 전자칠판이라는 실제 교실 조건에 맞춰 학생 식별·진단·교사 화면·오프라인을 넣었습니다.</li><li><strong>M5(콘텐츠 확장)</strong>: 강·바다 테마를 추가하고 같은 방식으로 엔진을 다시 조정했습니다.</li><li><strong>M6(파일럿 준비)</strong>: 서버 없이도 반 전체가 겨룰 수 있는 도전 코드, 파일럿 결과 수집 도구를 만들었습니다.</li><li><strong>10-26(그림·사용성)</strong>: 생성한 그림 79장을 연결하고, 사용해 보며 나온 불편(카드 위치 조정, 홈 이동)을 고쳤습니다.</li><li><strong>10-26(시작 화면)</strong>: 숫자 버튼 61개로 번호를 고르던 시작 화면을 입력란 3칸으로 바꾸고, 학생이 디벗으로 바로 접속할 수 있게 QR 코드와 배경 그림을 넣었습니다. QR 코드는 공통 컴포넌트로 떼어 교사 메뉴에서도 띄울 수 있게 했습니다.</li><li><strong>10-27(업데이트 계획 3가지)</strong>: 개선 아이디어 중 전자칠판용 큰 그림, 되돌리기, 카드 도감 뒤집기를 구현했습니다.</li></ul>
+</section>
+<section id="sec-6"><h2>6. 주요 의사결정과 이유</h2>
+<table><thead><tr><th>결정</th><th>이유</th></tr></thead><tbody><tr><td>서버·로그인 없이 기기 저장</td><td>아동 개인정보 수집을 피하고, 교사가 별도 설정 없이 주소 하나로 수업 가능</td></tr><tr><td>앱 안에서 생성형 AI를 쓰지 않음</td><td>아동 대상 서비스의 안전·비용 문제. 설명 문장은 템플릿 + 한국어 조사 자동 선택</td></tr><tr><td>단순화한 로트카-볼테라 모델 + 자동 보정</td><td>4학년이 "화살표를 따라가면 이해되는" 수준의 경향만 보여 주면 충분. 계수를 손으로 맞추지 않아도 균형 상태가 됨</td></tr><tr><td>엔진에 시간 척도 τ, 같은 무리 다툼 θ, 흙 양분 상태 추가(PRD 6.2보다 확장)</td><td>진동을 줄이고 변화가 몇 년에 걸쳐 보이게 함. 분해자 효과가 "서서히" 나타나게 함</td></tr><tr><td>강·바다는 전역 상수 대신 생물별 섭식량만 조정</td><td>숲에서 맞춘 결과를 깨지 않고 새 테마를 맞추기 위해</td></tr><tr><td>질문 1·2 정답을 시뮬레이션 결과로 계산</td><td>데이터를 고쳐도 정답이 저절로 맞고, 애매한 문제는 테스트가 막음</td></tr><tr><td>D3 대신 고정 좌표 + 빈자리 찾기</td><td>교과서 그림과 같은 층 배치를 유지하고 의존성을 줄임</td></tr><tr><td>vite-plugin-pwa 대신 직접 만든 서비스 워커 플러그인</td><td>저장할 파일 목록을 정확히 통제(글꼴 woff2만, 앱이 쓰는 그림만)</td></tr><tr><td>화면에 교과서 쪽수를 쓰지 않음</td><td>학교마다 쓰는 교과서(출판사)가 달라 혼란을 줌</td></tr><tr><td>TypeScript 5.9 고정</td><td>Vite·React 플러그인 호환성</td></tr><tr><td>큰 그림은 <code>srcset</code>(256w·512w) + <code>sizes</code>로 브라우저가 고르게 함</td><td>화면 너비 1600px 이상이나 배율 150% 이상에서 512px. 먹이그물 판(SVG <code>&lt;image&gt;</code>)은 srcset이 없어 같은 조건(<code>BIG_SCREEN</code>)을 코드에서 확인</td></tr><tr><td>되돌리기는 동작 직전의 카드 위치·화살표 전체를 기록</td><td>놓기·잇기·옮기기·정리하기를 한 방식으로 되돌릴 수 있음. 마지막 동작이 카드 놓기일 때 그 전 화살표가 지워지는 혼란을 막음. 힌트 감점·받은 보상은 되돌리지 않음</td></tr><tr><td>카드 상세는 뒤집는 큰 카드</td><td>앞면은 그림을 크게 보고, 뒷면에서 사는 곳·특징을 읽게 해 한 번에 보이는 글을 줄임. 다른 카드를 고르면 앞면부터</td></tr><tr><td>카드 옮기기는 모드 버튼으로 구분</td><td>끌기 하나로 잇기와 옮기기를 모두 하면 4학년이 헷갈림. 손잡이·길게 누르기보다 태블릿 터치에서 안전</td></tr><tr><td>번호는 숫자 버튼 대신 입력란 3칸</td><td>버튼 61개가 화면을 가득 채워 복잡함. 디벗·크롬북 모두 숫자 키패드가 뜨고, 칸 자동 이동으로 누르는 횟수도 비슷함</td></tr><tr><td>QR은 지금 연 주소로 기기 안에서 만듦</td><td>배포 주소가 바뀌어도 코드를 고칠 필요가 없고, 인터넷이 끊겨도 표시됨</td></tr><tr><td>QR 코드·크게 보기 창을 공통 컴포넌트(<code>src/components/qr.tsx</code>)로 분리</td><td>시작 화면과 교사 메뉴가 같은 QR·같은 창을 쓰게 해, 한 곳만 고치면 둘 다 바뀜</td></tr><tr><td>배경 그림에 앱 제목을 넣고, 입력 카드는 그 아래에 둠</td><td>화면 크기(1280×690~1920×1080)가 달라도 그림 제목과 카드가 겹치지 않게 카드 위쪽에 화면 높이의 25%를 비움</td></tr><tr><td>그림 주소는 데이터에 앞부분만 저장</td><td><code>img/forest/forest-frog</code>처럼 적고 크기·확장자는 <code>imageUrl()</code> 한 곳에서 결정</td></tr></tbody></table>
+</section>
+<section id="sec-7"><h2>7. 문제 해결 기록</h2>
+<table><thead><tr><th>문제</th><th>원인</th><th>해결</th></tr></thead><tbody><tr><td>강·바다에서 사건 결과가 교과서 설명보다 약하게 나옴</td><td>동물성 플랑크톤 → 고등어 연쇄 효과가 모델에서 작음</td><td>바다 1단계 학습 초점을 해파리▲/게▲로 바꾸고, 왜가리·배스·바다거북의 섭식량만 조정</td></tr><tr><td>숲 가뭄 사건에서 "물 주기" 행동이 의미가 없었음</td><td>가뭄이 짧고 약함</td><td>10년·50% 가뭄으로 바꿔 행동의 효과가 보이게 함</td></tr><tr><td>오프라인에서 빈 화면</td><td>서버의 <code>Vary: Origin</code> 때문에 crossorigin 모듈 요청이 저장본과 어긋남</td><td>서비스 워커에서 <code>ignoreVary: true</code>로 찾기</td></tr><tr><td>Playwright를 병렬로 돌리다 개발 도구가 두 번 멈춤</td><td>브라우저 여러 개가 메모리를 많이 씀</td><td>e2e는 항상 워커 1개, 백그라운드로 실행</td></tr><tr><td>그림을 연결한 뒤에도 미리보기에 옛 화면이 보임</td><td>서비스 워커가 이전 빌드를 캐시</td><td>저장본을 지우고 다시 불러와 확인. 배포 후에는 새로고침 한 번으로 갱신</td></tr><tr><td>먹이그물 PNG 저장 시 그림이 빠질 수 있음</td><td>SVG를 그림으로 바꾸면 바깥 파일을 읽지 못함</td><td>저장할 때 <code>&lt;image&gt;</code>를 data URL로 바꿔 넣음</td></tr><tr><td>테마 카드 배경 크기 설정이 먹지 않음</td><td>테마별 그라데이션 <code>background</code> 단축 속성이 덮어씀</td><td>쓰지 않게 된 그라데이션 규칙 삭제</td></tr><tr><td>사건 탐구 보기의 🐟가 붕어·큰입배스·고등어를 모두 뜻함</td><td>이모지 기호로는 생물 구분이 안 됨</td><td><code>[crucian]</code>처럼 생물 id 기호로 바꾸고 <code>reasonParts()</code>가 그림으로 변환</td></tr><tr><td>시작 화면 카드가 배경 그림의 제목(돋보기)에 닿음</td><td>1280×690에서는 그림이 덜 잘려 제목이 아래로 내려옴</td><td>세 화면 크기에서 그림 제목 아래 끝과 카드 위치를 계산해 비교하고, 카드 위 여백을 22vh → 25vh로 늘림</td></tr><tr><td>번호 칸 자동 이동 시점</td><td>반 "1"은 1반일 수도 10~15반일 수도 있음</td><td>칸을 다 채웠거나, 숫자를 더 붙이면 최댓값을 넘을 때(예: 반 "2", 번호 "5")만 다음 칸으로 이동</td></tr><tr><td>카드 옮기기 e2e가 실패</td><td>빈자리로 밀려나는 0.4초 이동 효과가 끝나기 전에 위치를 잼</td><td>효과 시간만큼 기다린 뒤 검사</td></tr></tbody></table>
+</section>
+<section id="sec-8"><h2>8. 보안/성능 고려사항</h2>
+<ul><li><strong>개인정보</strong>: 이름·사진을 받지 않고 학년·반·번호만 기기에 저장. 외부 전송·추적 스크립트 없음.</li><li><strong>공용 기기</strong>: 현재 학생은 sessionStorage에 두어 브라우저를 닫으면 번호 입력으로 돌아감. 교사 메뉴는 나가면 다시 잠김. 손님 기록은 결과·CSV에서 제외.</li><li><strong>대항전 공정성</strong>: 엔진이 결정론적이라 같은 코드면 모든 기기가 같은 문제·결과. 확인 글자로 점수 조작을 막음.</li><li><strong>성능</strong>: 그림은 256px WebP(생물 카드 평균 약 16KB). 오프라인 저장 대상은 앱이 실제로 쓰는 그림 132장(256·512px 각 49장, UI 6장, 사건·행동 24장, 배경 4장). 512px을 더해 생물 그림 저장 용량이 약 0.8MB에서 약 3.2MB로 늘었지만, 전자칠판에서 오프라인일 때도 큰 그림이 나오게 함.</li></ul>
+</section>
+<section id="sec-9"><h2>9. 테스트 및 검증</h2>
+<table><thead><tr><th>종류</th><th>내용</th></tr></thead><tbody><tr><td>엔진</td><td>무사건 30년 안정성, 복원력, 교과서 정답 일치(숲·강·바다)</td></tr><tr><td>데이터</td><td>먹이 선호도 합 1, 교과서 대조표와 관계 일치, 배치 겹침 없음, 화살표가 다른 생물을 지나가지 않음, 그림 파일 존재</td></tr><tr><td>출제 품질</td><td>스테이지 질문 1·2가 애매하지 않음, 질문 3 정답의 영향 길이 엔진 기록과 같음, 알맞은 관리인 행동 하나만 균형 별 3개, 보기 그림 기호가 모두 그림 파일로 바뀜</td></tr><tr><td>어휘</td><td>화면 문장에 금지어(1차 소비자, 개체 수, 천적 등) 없음</td></tr><tr><td>게임 규칙</td><td>먹이그물 판정, 빈자리 찾기, 도전 코드·수업 코드·확인 글자, 파일럿 집계, 진행 상황 저장</td></tr><tr><td>e2e</td><td>시작 화면(번호 입력·칸 자동 이동·범위 안내·QR 크게 보기와 닫기), 교사 메뉴 QR, 화면 크기별 그림 크기(256·512px), 되돌리기(옮기기·Ctrl+Z 잇기·놓기), 카드 도감 뒤집기, 화면 흐름·스크롤 없음·교과서 쪽수 없음, 분류 놀이, 먹이그물 잇기·힌트·정리·옮기기, 사건 탐구, 교실 기능, 강·바다, 도전 코드, 오프라인. 1280×690·1280×720·1920×1080 세 크기</td></tr><tr><td>결과</td><td>단위 196개 통과, e2e 118개 통과·2개 건너뜀(2026-10-27)</td></tr><tr><td>수동 확인</td><td>Playwright 브라우저로 메인·먹이그물 판·사건 카드·카드 도감·PNG 저장 화면, 시작 화면(배경 그림·QR 창), 카드 도감 큰 카드 앞·뒷면, 되돌리기 버튼이 들어간 도구 줄을 1280×690·1280×720·1920×1080에서 직접 보고 확인</td></tr></tbody></table>
+</section>
+<section id="sec-10"><h2>10. 배포</h2>
+<ul><li>GitHub Actions(<code>.github/workflows</code>): main에 올리면 <code>npm ci</code> → <code>npm test</code> → <code>npm run build</code> → GitHub Pages 배포. 테스트가 틀리면 배포하지 않습니다.</li><li>주소: <a href="https://poguni.github.io/web-rangers/">https://poguni.github.io/web-rangers/</a> (저장소 Settings → Pages → Source를 "GitHub Actions"로 설정)</li><li><code>base: "./"</code>로 빌드해 Pages 하위 경로에서도 동작합니다.</li></ul>
+</section>
+<section id="sec-11"><h2>11. 알려진 한계</h2>
+<ul><li><strong>기기 간 데이터 공유 없음</strong>: 결과는 기기마다 저장되고, 교사가 CSV로 모아야 합니다. 브라우저 데이터를 지우면 기록이 사라집니다.</li><li><strong>단순 모델</strong>: 실제 생태계의 정밀한 예측이 아니라 경향을 보여 주는 모델입니다. 일부 연쇄 효과(바다의 플랑크톤 → 고등어)는 약하게 나옵니다.</li><li><strong>콘텐츠 검토 대기</strong>: 송사리 추가, 사후 진단의 세균 문항 등 교사 검토가 필요한 항목이 있습니다.</li><li><strong>파일럿 미실시</strong>: PRD 14장 성공 지표(간접 효과 정답률 +20%p 등)는 아직 측정 전입니다.</li><li><strong>좁은 화면</strong>: 창 너비가 약 1000px보다 좁으면 먹이그물 만들기 도구 줄이 꽉 차서 진행 막대가 짧아집니다.</li><li><strong>업데이트 반영</strong>: 서비스 워커 캐시 때문에 배포 직후 기기에서 새로고침이 한 번 필요할 수 있습니다.</li><li><strong>미구현 P1 기능</strong>: 진단 문항 읽어 주기(음성), 효과음, 고대비 모드·글자 크기 조절.</li><li><strong>판 그림 크기는 처음 연 화면 기준</strong>: 먹이그물 판의 그림 크기(256·512px)는 판을 그릴 때 화면 조건으로 정해, 창 크기를 바꾼 뒤에는 다시 그려질 때 바뀝니다.</li><li><strong>도구 줄 공간</strong>: 되돌리기 버튼이 더해져 1280 폭에서 "이은 화살표" 진행 막대가 짧아졌습니다.</li><li><strong>번호 범위 고정</strong>: 반은 15반, 번호는 40번까지만 쓸 수 있습니다. 더 큰 학교라면 범위를 늘려야 합니다.</li><li><strong>QR 주소</strong>: QR은 지금 연 주소로 만들기 때문에, 교사가 배포 주소가 아닌 곳(예: 개발용 주소)에서 열면 그 주소가 담깁니다.</li><li><strong>앱 이름 반복</strong>: 시작 화면에 머리말 로고와 배경 그림 제목으로 앱 이름이 두 번 보입니다.</li></ul>
+</section>
+<section id="sec-12"><h2>12. 향후 개선 아이디어 / 업데이트 계획</h2>
+<h3>다음에 하면 좋을 것</h3>
+<ul><li><strong>파일럿 수업 실시</strong>: 1~2개 학급에서 사전·사후 진단을 비교하고, 파일럿 화면으로 PRD 14장 지표(방향 오류율, 완료율, 예측 정답률 변화)를 확인한 뒤 난이도·문장을 고칩니다.</li><li><strong>교사 콘텐츠 검토 반영</strong>: 송사리·세균 문항 등 표시해 둔 항목을 과학 담당 교사와 확인합니다.</li><li><strong>새 버전 알림</strong>: 서비스 워커가 새 빌드를 받으면 "새 버전이 있어요. 눌러서 새로고침" 띠를 보여 줍니다.</li><li><strong>좁은 화면 도구 줄</strong>: 1000px 미만에서 도구 줄을 두 줄로 나누거나 아이콘만 보이게 합니다.</li><li><strong>디벗 접속 확인</strong>: 배포 주소에서 QR을 디벗 카메라로 찍어 실제로 열리는지, 디벗 화면(세로·가로)에서 시작 화면과 활동 화면이 깨지지 않는지 확인합니다.</li></ul>
+<h3>여유가 있으면</h3>
+<ul><li><strong>진단 문항 읽어 주기</strong>(Web Speech API, PRD P1)와 고대비 모드·글자 크기 2단계.</li><li><strong>되돌린 것 다시 하기</strong>: 되돌리기 옆에 "다시 하기"(Ctrl+Y)를 두어 실수로 되돌린 것을 복구.</li><li><strong>교사 하위 화면에서도 QR 코드</strong>: 모둠 대항전·수업 도구 화면에서도 접속 QR을 바로 띄우기(지금은 교사 메뉴 첫 화면에만 있음).</li><li><strong>시작 화면 세로 배경</strong>: 디벗을 세로로 들었을 때 쓸 9:16 배경 그림.</li></ul>
+<h3>아이디어 수준</h3>
+<ul><li>사건 두 개가 겹치는 "복합 사건" 스테이지(예: 가뭄 + 외래종).</li><li>학생이 직접 사건 카드를 만들어 친구에게 내는 "출제 모드".</li><li>학기 말 반 전체 결과를 한 장으로 보는 교사용 보고서(인쇄용).</li></ul>
+</section>
+<section id="sec-13"><h2>13. 이전 버전(v1) 이후 변경 사항</h2>
+<h3>추가</h3>
+<ul><li><strong>접속 QR 코드</strong>: 시작 화면 오른쪽 아래에 작게 보이고, 누르면 가운데에 크게(전자칠판에서 최대 520px) 나옴. 주소도 함께 보여 주고, 닫기·Esc·바깥 클릭으로 닫힘. <code>qrcode-generator</code> 라이브러리 추가.</li><li><strong>교사 메뉴 QR 버튼</strong>: 교사 메뉴 도구 줄의 "📱 접속 QR 코드"로 같은 크게 보기 창을 띄움. QR 코드와 창은 <code>src/components/qr.tsx</code> 공통 컴포넌트로 분리.</li><li><strong>시작 화면 배경 그림</strong>: 숲·강·바다가 이어지고 위쪽에 "먹이그물 탐험대 / Web Rangers" 제목이 들어간 그림(<code>public/img/ui/ui-bg-start.webp</code>). 오프라인 저장 목록에 자동 포함.</li><li><strong>전자칠판용 큰 그림</strong>: 생물 그림에 <code>srcset</code>을 붙여 화면 너비 1600px 이상이나 배율 150% 이상에서 512px을 씀. 먹이그물 판도 같은 조건. 오프라인 저장 목록에 512px 그림 추가.</li><li><strong>되돌리기</strong>: 먹이그물 만들기 도구 줄의 "↩ 되돌리기"와 Ctrl+Z로 카드 놓기·화살표 잇기·카드 옮기기·정리하기를 한 단계씩 취소. 먹이사슬 찾기 중에는 끔.</li><li><strong>카드 도감 뒤집기</strong>: 오른쪽 상세 칸을 큰 카드로 바꿈. 앞면 512px 그림·이름·역할, 뒷면 사는 곳·먹이·나를 먹는 동물·특징. 카드나 버튼을 누르면 3D로 뒤집힘.</li><li>e2e 테스트: 칸 자동 이동·범위 안내, QR 크게 보기와 닫기, 교사 메뉴에서 QR 열고 닫기, 화면 크기별 그림 크기, 되돌리기, 카드 뒤집기.</li></ul>
+<h3>수정</h3>
+<ul><li><strong>번호 입력 방식</strong>: 숫자 버튼(학년 6·반 15·번호 40개) → 입력란 3칸. 버튼 문구 "번호를 모두 골라 주세요" → "번호를 모두 써 주세요".</li><li><strong>시작 화면 배치</strong>: 입력 카드를 화면 중하단으로 옮기고(위쪽 25%는 그림 제목 자리), 머리말을 반투명으로 바꿈.</li><li><strong>카드 제목</strong>: "먹이그물 탐험대에 온 것을 환영해요!" → "탐험대원 번호를 써 주세요"(배경 그림 제목과 앱 이름이 겹치지 않게).</li><li><strong>카드 도감 상세</strong>: 작은 그림(96px) + 설명 목록 → 뒤집는 큰 카드. 강 사건 탐구 e2e는 "나를 먹는 동물" 문구를 카드를 뒤집은 뒤 확인하도록 고침.</li></ul>
+<h3>정리</h3>
+<ul><li>숫자 버튼 전용 스타일(<code>.numpick</code>, <code>.np-btns.g/.c/.n</code>)을 지움. 모둠 고르기 등 다른 화면에서 쓰는 <code>.np</code> 스타일은 그대로 둠.</li><li>카드 상세의 옛 스타일(<code>.detail-head</code>)을 지움.</li></ul>
+</section>
+  </main>
+</div>
+<script>
+  const links = document.querySelectorAll('nav.sidebar a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
+  const setActive = (id) => links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => { if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach((el) => el && observer.observe(el));
+</script>
+</body>
+</html>

@@ -18,14 +18,14 @@ async function pin(page: Page, digits: string) {
 
 test("시작: 번호를 쓰면 메인에 번호가 보이고, 학생 바꾸기로 돌아와요", async ({ page }) => {
   await page.goto("/#/stages"); // 번호를 쓰기 전에는 어느 주소든 시작 화면
-  await expect(page.getByText("먹이그물 탐험대에 온 것을 환영해요!")).toBeVisible();
+  await expect(page.getByText("탐험대원 번호를 써 주세요")).toBeVisible();
   await expect(page.getByRole("button", { name: "번호를 모두 써 주세요" })).toBeDisabled();
   expect(await fits(page)).toBe(true);
   await login(page, 4, 2, 13);
   await expect(page.getByText("4학년 2반 13번")).toBeVisible();
   expect(await fits(page)).toBe(true);
   await page.getByRole("button", { name: "학생 바꾸기" }).click();
-  await expect(page.getByText("먹이그물 탐험대에 온 것을 환영해요!")).toBeVisible();
+  await expect(page.getByText("탐험대원 번호를 써 주세요")).toBeVisible();
   await page.getByRole("button", { name: "손님으로 시작" }).click();
   await expect(page.locator(".appbar .pill")).toHaveText("👤 손님");
 });
@@ -151,6 +151,18 @@ test("교사: 이 기기 데이터 지우기는 두 번 확인해요", async ({ 
   await expect(page.getByText(/되돌릴 수 없어요/)).toBeVisible();
   await page.getByRole("button", { name: "모두 지우기" }).click();
   await expect(page.getByText("아직 번호를 넣고 활동한 학생이 없어요.")).toBeVisible();
+});
+
+test("교사: 교사 메뉴에서도 접속 QR 코드를 크게 띄워요", async ({ page }) => {
+  await page.goto("/#/teacher");
+  await pin(page, "13571357");
+  await page.getByRole("button", { name: /접속 QR 코드/ }).click();
+  const dialog = page.getByRole("dialog", { name: "접속 QR 코드" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(new URL(page.url()).origin);
+  await dialog.getByRole("button", { name: "닫기" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("학생별 결과")).toBeVisible();
 });
 
 test("모둠 대항전: 답 가리기, 공개·관찰, 점수판, 최종 결과", async ({ page }) => {

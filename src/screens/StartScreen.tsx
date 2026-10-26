@@ -1,7 +1,7 @@
 // 00 시작: 학년·반·번호를 입력란에 쓰기(이름 입력란 없음), 손님으로 시작, 접속 QR 코드, 교사 메뉴(F1-1)
-import qrcode from "qrcode-generator";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { AppBar } from "../components/common";
+import { QrCode, QrDialog } from "../components/qr";
 import { GUEST, studentLabel, useProgress } from "../store/progress";
 import { josa } from "../utils/korean";
 
@@ -50,7 +50,7 @@ export function StartScreen() {
       </AppBar>
       <main className="body">
         <form className="panel start-card" onSubmit={submit}>
-          <h1>먹이그물 탐험대에 온 것을 환영해요!</h1>
+          <h1>탐험대원 번호를 써 주세요</h1>
           <p className="sub">학년, 반, 번호를 숫자로 써 주세요. 이름은 쓰지 않아요.</p>
           <div className="id-row">
             {FIELDS.map((f, i) => (
@@ -92,49 +92,6 @@ export function StartScreen() {
         </button>
       </main>
       {qrOpen && <QrDialog onClose={() => setQrOpen(false)} />}
-    </div>
-  );
-}
-
-/** 지금 주소(#/ 뒷부분 제외)를 담은 QR 코드. 오프라인에서도 기기 안에서 만듦 */
-function QrCode({ size }: { size: number }) {
-  const path = useMemo(() => {
-    const qr = qrcode(0, "M");
-    qr.addData(appUrl());
-    qr.make();
-    const n = qr.getModuleCount();
-    let d = "";
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + 2},${r + 2}h1v1h-1z`;
-    return { d, n: n + 4 }; // 둘레 2칸 여백
-  }, []);
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${path.n} ${path.n}`} shapeRendering="crispEdges" aria-hidden="true">
-      <rect width={path.n} height={path.n} fill="#fff" />
-      <path d={path.d} fill="#1f2a37" />
-    </svg>
-  );
-}
-
-const appUrl = () => location.origin + location.pathname;
-
-function QrDialog({ onClose }: { onClose: () => void }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    addEventListener("keydown", onKey);
-    return () => removeEventListener("keydown", onKey);
-  }, [onClose]);
-  return (
-    <div className="qr-overlay" onClick={onClose}>
-      <div className="panel qr-dialog" role="dialog" aria-modal="true" aria-label="접속 QR 코드" onClick={(e) => e.stopPropagation()}>
-        <h2>📷 카메라로 QR 코드를 찍어 접속해요</h2>
-        <QrCode size={360} />
-        <p className="qr-url">{appUrl()}</p>
-        <button ref={closeRef} className="btn ghost" onClick={onClose}>
-          닫기
-        </button>
-      </div>
     </div>
   );
 }

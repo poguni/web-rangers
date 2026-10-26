@@ -4,10 +4,10 @@ import { defineConfig, type Plugin } from "vite";
 
 /** 오프라인(PRD 11장): 빌드한 파일 전부(글꼴 포함)를 처음 접속할 때 기기에 저장하는 서비스 워커를 만듦 */
 function offline(): Plugin {
-  // public 폴더에서 그대로 복사되는 파일. 그림은 앱이 쓰는 것만(256px·사건·행동 카드·테마 배경·설치 아이콘 512px)
+  // public 폴더에서 그대로 복사되는 파일. 그림은 앱이 쓰는 것만(256·512px, 사건·행동 카드, 배경)
   const images = readdirSync("public/img", { recursive: true, encoding: "utf8" })
     .map((f) => `img/${f.replace(/\\/g, "/")}`)
-    .filter((f) => /-256\.webp$|^img\/(event|action)\/.*\.webp$|^img\/ui\/ui-(bg-.*|app-icon-512)\.webp$/.test(f));
+    .filter((f) => /-(256|512)\.webp$|^img\/(event|action)\/.*\.webp$|^img\/ui\/ui-bg-.*\.webp$/.test(f));
   const extra = ["manifest.webmanifest", ...images];
   return {
     name: "webrangers-offline",

@@ -59,7 +59,8 @@ test("강 사건 탐구 3: 큰입배스가 들어오고, 외래종 잡기로 균
   await page.getByRole("tab", { name: /강/ }).click();
   await page.getByRole("listitem", { name: "큰입배스" }).click();
   await expect(page.getByText("생태계를 어지럽히는 생물")).toBeVisible();
-  await expect(page.getByText("이 먹이그물에는 없어요.")).toBeVisible(); // 먹는 동물이 거의 없음
+  await page.getByRole("button", { name: /뒤집어서/ }).click();
+  await expect(page.locator(".face.back")).toContainText("이 먹이그물에는 없어요."); // 먹는 동물이 거의 없음
 });
 
 test("바다 사건 탐구 1: 바다 쓰레기를 치워야 균형 별 3개", async ({ page }) => {
@@ -104,6 +105,24 @@ test("교사: 카드 모두 열기를 켜면 도감의 카드가 모두 보여�
   await expect(page.getByRole("tab", { name: "숲 16/16" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "강 13/13" })).toBeVisible();
   await expect(page.getByText("선생님이 모든 카드를 열었어요")).toBeVisible();
+
+  // 큰 카드: 앞면 512px 그림 → 뒤집으면 사는 곳·특징, 다른 카드를 고르면 다시 앞면
+  await page.getByRole("tab", { name: /숲/ }).click();
+  await page.getByRole("listitem", { name: "개구리" }).click();
+  const front = page.locator(".face.front");
+  const back = page.locator(".face.back");
+  await expect(front.locator("img.pic")).toHaveAttribute("src", /forest-frog-512\.webp$/);
+  await expect(front).toHaveAttribute("aria-hidden", "false");
+  await front.click(); // 카드를 눌러도 뒤집힘
+  await expect(back).toHaveAttribute("aria-hidden", "false");
+  await expect(back).toContainText("사는 곳");
+  await expect(back).toContainText("특징");
+  await page.getByRole("button", { name: /앞면 보기/ }).click();
+  await expect(front).toHaveAttribute("aria-hidden", "false");
+  await page.getByRole("button", { name: /뒤집어서/ }).click();
+  await page.getByRole("listitem", { name: "메뚜기" }).click();
+  await expect(page.locator(".face.front")).toHaveAttribute("aria-hidden", "false");
+  await expect(page.locator(".face.front h2")).toHaveText("메뚜기");
 });
 
 test("모둠 대항전: 강 테마로 진행해요", async ({ page }) => {

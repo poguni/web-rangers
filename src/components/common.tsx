@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { imageUrl } from "../data/images";
+import { imageSrcSet, imageUrl } from "../data/images";
 import { cardById } from "../game/cards";
 import { ROLES } from "../data/roles";
 import type { Role } from "../data/types";
 
-/** 생물·사건·행동 그림. 글자 크기(em)에 맞춰 커지므로 이모지 자리였던 곳에 그대로 들어감 */
-export function Pic({ image }: { image: string }) {
-  return <img className="pic" src={imageUrl(image)} alt="" draggable={false} />;
+/** 생물·사건·행동 그림. 글자 크기(em)에 맞춰 커지므로 이모지 자리였던 곳에 그대로 들어감
+ *  전자칠판에서는 512px 그림(srcset), big이면 언제나 512px(카드 도감 큰 카드) */
+export function Pic({ image, big }: { image: string; big?: boolean }) {
+  return <img className="pic" src={imageUrl(image, big ? 512 : 256)} {...(big ? {} : imageSrcSet(image))} alt="" draggable={false} />;
 }
 
 export function RoleBadge({ role }: { role: Role }) {

@@ -2,6 +2,7 @@
 import { useState, type ReactNode } from "react";
 import type { Route } from "../App";
 import { AppBar } from "../components/common";
+import { QrDialog } from "../components/qr";
 import { DIAG_MAX } from "../data/diagnostic";
 import { allStages } from "../data/stages";
 import { needsReview, sortedStudents, studentRow, summary, toCsv } from "../game/results";
@@ -99,6 +100,7 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
   const resetTeam = useTeam((s) => s.reset);
   const [confirm, setConfirm] = useState(0);
   const [cardsOpen, setCardsOpen] = useState(allCardsOpen);
+  const [qrOpen, setQrOpen] = useState(false);
   const rows = sortedStudents(students).map(studentRow);
   const sum = summary(rows);
   const review = needsReview(rows);
@@ -135,6 +137,9 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
           </button>
           <button className="btn ghost sm" onClick={() => go("guide")}>
             📘 교사 가이드
+          </button>
+          <button className="btn ghost sm" onClick={() => setQrOpen(true)}>
+            📱 접속 QR 코드
           </button>
           <button
             className="btn ghost sm"
@@ -258,6 +263,7 @@ export function TeacherScreen({ go }: { go: (r: Route) => void }) {
           )}
         </section>
       </main>
+      {qrOpen && <QrDialog onClose={() => setQrOpen(false)} />}
     </div>
   );
 }
