@@ -48,12 +48,12 @@ export function Toast({ message }: { message: ToastMessage | null }) {
 export function AppBar({ crumb, children, onExit }: { crumb?: ReactNode; children?: ReactNode; onExit?: () => void }) {
   return (
     <header className="appbar">
-      <div className="logo">
+      <a className="logo" href="#/" title="처음 화면으로">
         <span className="mark" aria-hidden="true">
           🧭
         </span>
         먹이그물 탐험대
-      </div>
+      </a>
       {crumb && <span className="crumb">{crumb}</span>}
       <span className="sp" />
       {children}

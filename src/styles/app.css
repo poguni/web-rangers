@@ -20,7 +20,7 @@ h1, h2, h3, h4 { font-family: var(--f-title); font-weight: 400; margin: 0; line-
 
 /* ── 앱 상단 바 ── */
 .appbar { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: var(--card); border-bottom: 2px solid var(--line); flex: none; }
-.logo { display: flex; align-items: center; gap: 9px; font-family: var(--f-title); font-size: 21px; color: var(--navy); white-space: nowrap; }
+.logo { display: flex; align-items: center; gap: 9px; font-family: var(--f-title); font-size: 21px; color: var(--navy); white-space: nowrap; text-decoration: none; border-radius: 12px; }
 .logo .mark { width: 36px; height: 36px; border-radius: 11px; background: var(--navy); display: grid; place-items: center; font-size: 19px; }
 .appbar .crumb { color: var(--ink-2); font-size: 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .appbar .sp { flex: 1; }

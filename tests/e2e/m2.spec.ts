@@ -22,6 +22,13 @@ test.describe("화면이 스크롤 없이 들어가고, 교과서 쪽수가 없�
   }
 });
 
+test("머리말의 앱 아이콘·이름을 누르면 메인 화면으로 가요", async ({ page }) => {
+  await page.goto("/#/build/river");
+  await page.getByRole("link", { name: "먹이그물 탐험대" }).click();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.getByRole("heading", { name: "탐험대원, 오늘은 어디를 탐험해 볼까요?" })).toBeVisible();
+});
+
 test("메인 → 분류 놀이: 맞으면 바구니에 들어가고, 틀리면 카드 뒷면 설명이 나와요", async ({ page }) => {
   await page.goto("/#/");
   await page.getByRole("button", { name: /분류 놀이/ }).click();
