@@ -2,7 +2,7 @@
 // onLink가 있으면 잇기 판, onNodeTap만 있으면 생물 고르기 판(자유 실험실), 둘 다 없으면 보기 전용(관찰)
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type RefObject } from "react";
 import { BOARD, type Point } from "../game/build";
-import { PLACEHOLDER } from "../data/placeholders";
+import { imageUrl } from "../data/images";
 import type { Role } from "../data/types";
 
 export interface BoardNode {
@@ -202,9 +202,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
               <circle className="hit" r={R + 12} />
               <circle className="ring" r={40} />
               <circle className="bg" r={R} stroke={ROLE_COLOR[n.role]} />
-              <text className="emo" y={1}>
-                {PLACEHOLDER[n.image] ?? "❔"}
-              </text>
+              <image className="emo" href={imageUrl(n.image)} x={-27} y={-27} width={54} height={54} />
               <text className="nm" y={50}>
                 {n.name}
               </text>

@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { riverBass, riverEvents, riverLayout, riverSpecies } from "../../src/data/river";
 import { seaEvents, seaLayout, seaSpecies } from "../../src/data/sea";
-import { PLACEHOLDER } from "../../src/data/placeholders";
+import { existsSync } from "node:fs";
+import { imageUrl } from "../../src/data/images";
 import { BANNED_WORDS } from "../../src/data/words";
 import { relationsOf } from "../../src/game/build";
 import { THEME_CARDS } from "../../src/game/cards";
@@ -69,12 +70,12 @@ describe.each([
       for (const p of s.prey) expect(species.some((o) => o.id === p.id), `${s.name} → ${p.id}`).toBe(true);
     }
   });
-  it("배치 좌표와 자리 표시 그림이 모두 있어요", () => {
+  it("배치 좌표와 그림 파일이 모두 있어요", () => {
     for (const s of species) {
       expect(layout[s.id], s.name).toBeDefined();
-      expect(PLACEHOLDER[s.image], s.image).toBeDefined();
+      expect(existsSync(`public/${imageUrl(s.image)}`), s.image).toBe(true);
     }
-    for (const e of events) expect(PLACEHOLDER[e.image], e.image).toBeDefined();
+    for (const e of events) expect(existsSync(`public/${imageUrl(e.image)}`), e.image).toBe(true);
   });
   it("배치에서 생물끼리 겹치지 않고, 화살표가 다른 생물 그림을 지나가지 않아요", () => {
     const ids = species.map((s) => s.id);

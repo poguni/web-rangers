@@ -60,7 +60,7 @@ export function CardsScreen({ go }: { go: (r: Route) => void }) {
                   style={{ borderBottomColor: got ? `var(--${c.role})` : undefined }}
                 >
                   <span className="e" aria-hidden="true">
-                    <Pic image={c.image} />
+                    <Pic image={got ? c.image : "img/ui/ui-card-back"} />
                   </span>
                   <b>{got ? c.name : "???"}</b>
                 </button>

@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { PLACEHOLDER } from "../data/placeholders";
+import { imageUrl } from "../data/images";
 import { cardById } from "../game/cards";
 import { ROLES } from "../data/roles";
 import type { Role } from "../data/types";
 
-/** 생물 그림. 지금은 자리 표시 이모지 — 실제 그림이 준비되면 이 컴포넌트만 바꿈 */
+/** 생물·사건·행동 그림. 글자 크기(em)에 맞춰 커지므로 이모지 자리였던 곳에 그대로 들어감 */
 export function Pic({ image }: { image: string }) {
-  return <span aria-hidden="true">{PLACEHOLDER[image] ?? "❔"}</span>;
+  return <img className="pic" src={imageUrl(image)} alt="" draggable={false} />;
 }
 
 export function RoleBadge({ role }: { role: Role }) {

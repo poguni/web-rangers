@@ -23,6 +23,21 @@ function inlineStyles(src: Element, dst: Element) {
   for (let i = 0; i < src.children.length; i++) inlineStyles(src.children[i], dst.children[i]);
 }
 
+/** SVG를 그림으로 바꾸면 바깥 파일을 읽지 못하므로, 생물 그림을 data URL로 바꿔 넣음 */
+async function embedImages(svg: SVGSVGElement) {
+  await Promise.all(
+    [...svg.querySelectorAll("image")].map(async (el) => {
+      const blob = await (await fetch(el.getAttribute("href")!)).blob();
+      const data = await new Promise<string>((resolve) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.readAsDataURL(blob);
+      });
+      el.setAttribute("href", data);
+    }),
+  );
+}
+
 /** svg → PNG 내려받기. 위에 제목 한 줄을 넣음 */
 export async function saveSvgAsPng(svg: SVGSVGElement, fileName: string, title: string) {
   const [, , w, h] = svg.getAttribute("viewBox")!.split(" ").map(Number);
@@ -35,6 +50,7 @@ export async function saveSvgAsPng(svg: SVGSVGElement, fileName: string, title: 
   clone.setAttribute("width", String(w));
   clone.setAttribute("height", String(h));
   clone.removeAttribute("style");
+  await embedImages(clone);
 
   const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml" }));
   try {

@@ -28,6 +28,7 @@ h1, h2, h3, h4 { font-family: var(--f-title); font-weight: 400; margin: 0; line-
 .pill.gold { background: var(--gold-2); color: var(--gold-ink); }
 .pill.navy { background: var(--navy-2); color: var(--navy); }
 .iconbtn { width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); display: grid; place-items: center; font-size: 19px; flex: none; }
+img.pic { height: 1.3em; width: auto; vertical-align: middle; object-fit: contain; }
 
 .body { padding: 12px 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
 .panel { background: var(--card); border: 2px solid var(--line); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow); }
@@ -58,17 +59,16 @@ h1, h2, h3, h4 { font-family: var(--f-title); font-weight: 400; margin: 0; line-
 
 /* ── 01 메인 ── */
 .hello { display: flex; align-items: center; gap: 16px; }
-.hello .badge { width: 72px; height: 72px; border-radius: 50%; background: var(--navy); display: grid; place-items: center; font-size: 36px; box-shadow: 0 0 0 5px var(--gold-2); flex: none; }
+.hello .badge { width: 72px; height: 72px; border-radius: 50%; background: var(--navy); display: grid; place-items: center; font-size: 36px; box-shadow: 0 0 0 5px var(--gold-2); flex: none; overflow: hidden; }
+.hello .badge img.pic { width: 100%; height: 100%; object-fit: cover; }
 .hello h1 { font-size: 27px; }
 .themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .theme { border-radius: var(--r-lg); overflow: hidden; border: 2px solid var(--line); background: var(--card); box-shadow: var(--shadow); text-align: left; padding: 0; display: flex; flex-direction: column; }
 .theme.on { border-color: var(--forest); outline: 3px solid var(--forest); }
 .theme:disabled { opacity: 0.7; }
-.theme .art { height: 120px; display: flex; align-items: flex-end; justify-content: center; gap: 6px; font-size: 38px; padding-bottom: 10px; position: relative; }
+.theme .art { background-size: cover; background-position: center 80%; height: 120px; display: flex; align-items: flex-end; justify-content: center; gap: 6px; font-size: 38px; padding-bottom: 10px; position: relative; }
+.theme .art img.pic { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(255, 255, 255, 0.9)); }
 .theme .art .tag { position: absolute; top: 10px; left: 10px; background: rgba(255, 253, 247, 0.92); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 700; }
-.theme.forest .art { background: linear-gradient(180deg, #cfe6c4, #7fb27a); }
-.theme.river .art { background: linear-gradient(180deg, #ddefd6 0%, #a9d3b0 45%, #8cc0cf 100%); }
-.theme.sea .art { background: linear-gradient(180deg, #d6eaf5 0%, #7fb3d5 55%, #2e6f9e 100%); }
 .theme .info { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 6px; }
 .theme h3 { font-size: 22px; margin: 0; display: flex; align-items: center; gap: 8px; }
 .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
@@ -111,7 +111,7 @@ h1, h2, h3, h4 { font-family: var(--f-title); font-weight: 400; margin: 0; line-
 .web .node:focus-visible circle.bg { stroke: var(--gold); }
 .web .node circle.bg { fill: var(--card); stroke-width: 5; }
 .web .node circle.hit { fill: transparent; }
-.web .node text.emo { font-size: 30px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.web .node image.emo { pointer-events: none; }
 .web .node text.nm { font: 700 15px var(--f-body); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; pointer-events: none; }
 .web .node .ring { fill: none; stroke: var(--gold); stroke-width: 4; opacity: 0; }
 .web .node.pick .ring { opacity: 1; stroke: var(--navy); stroke-dasharray: 6 5; }

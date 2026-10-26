@@ -9,5 +9,8 @@
   "background_color": "#FBF6EA",
   "theme_color": "#24466B",
   "lang": "ko",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "icons": [
+    { "src": "img/ui/ui-app-icon-256.webp", "sizes": "256x256", "type": "image/webp", "purpose": "any" },
+    { "src": "img/ui/ui-app-icon-512.webp", "sizes": "512x512", "type": "image/webp", "purpose": "any" }
+  ]
 }

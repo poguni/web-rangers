@@ -10,7 +10,7 @@ import { explainAll, influencePath, yearNotes } from "../engine/explain";
 import { resolveTargets } from "../engine/events";
 import { runScenario } from "../engine/run";
 import { POINTS, toDisplay } from "../engine/scoring";
-import { AFTER_YEARS, finalStars, prepareStage, scoreAnswers, THEMES, YEARS, type Answer, type Answers, type PreparedStage } from "../game/stage";
+import { AFTER_YEARS, finalStars, prepareStage, reasonParts, scoreAnswers, THEMES, YEARS, type Answer, type Answers, type PreparedStage } from "../game/stage";
 import { useProgress } from "../store/progress";
 import { josa } from "../utils/korean";
 
@@ -380,7 +380,7 @@ function Prediction({
             <button key={r.text} className="reason" aria-pressed={answers.q3 === i} onClick={() => set({ q3: i })}>
               <span className="dot" aria-hidden="true" />
               <span className="mini" aria-hidden="true">
-                {r.icons}
+                {reasonParts(r.icons, stage.theme, model).map((part, j) => (typeof part === "string" ? part : <Pic key={j} image={part.image} />))}
               </span>
               {r.text}
             </button>

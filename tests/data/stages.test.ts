@@ -1,12 +1,14 @@
 // PRD 6.6 출제 품질: 스테이지 질문이 애매하지 않고, 정답이 시뮬레이션과 맞는지
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { imageUrl } from "../../src/data/images";
 import { allStages, forestStages } from "../../src/data/stages";
 import { BANNED_WORDS } from "../../src/data/words";
 import { applyAction, unavailableReason } from "../../src/engine/actions";
 import { explainAll, influencePath } from "../../src/engine/explain";
 import { runScenario } from "../../src/engine/run";
 import { balanceStars, isAmbiguous, toDisplay } from "../../src/engine/scoring";
-import { AFTER_YEARS, prepareStage } from "../../src/game/stage";
+import { AFTER_YEARS, prepareStage, reasonParts } from "../../src/game/stage";
 
 describe.each(allStages.map((s) => [s.id, s] as const))("%s", (_, stage) => {
   const p = prepareStage(stage);
@@ -26,6 +28,10 @@ describe.each(allStages.map((s) => [s.id, s] as const))("%s", (_, stage) => {
     for (const id of stage.q2) expect(p.event.targets).not.toContain(id);
     const sizes = stage.q2.map((id) => Math.abs(value(id) - 100)).sort((a, b) => b - a);
     expect(sizes[0] - sizes[1], `보기 변화량 ${sizes}`).toBeGreaterThanOrEqual(5);
+  });
+
+  it("질문 3 보기의 그림 기호가 모두 그림 파일로 바뀌어요", () => {
+    for (const r of stage.q3) for (const part of reasonParts(r.icons, stage.theme, p.model)) if (typeof part !== "string") expect(existsSync(`public/${imageUrl(part.image)}`), part.image).toBe(true);
   });
 
   it("질문 3은 정답이 하나이고, 정답의 영향 길이 엔진 기록과 같아요", () => {

@@ -1,6 +1,6 @@
 // 01 메인: 테마(숲·강·바다)·모드 선택, 학생 번호·학생 바꾸기(F1-2), 진단, 카드 도감, 도전 코드, 오늘의 수업 코드(F10-4)
 import { useState } from "react";
-import { AppBar } from "../components/common";
+import { AppBar, Pic } from "../components/common";
 import type { Route } from "../App";
 import { allStages } from "../data/stages";
 import type { Theme } from "../data/types";
@@ -9,10 +9,10 @@ import { ACTIVITY_NAME, parseLessonCode, readLesson, saveLesson, type Activity }
 import { THEME_IDS, THEMES } from "../game/stage";
 import { studentLabel, useProgress, useStudent } from "../store/progress";
 
-const ART: Record<Theme, { art: string; desc: string }> = {
-  forest: { art: "🌰🐿️🐦🐍🦅", desc: "도토리·다람쥐·직박구리·매가 사는 곳" },
-  river: { art: "🌱🐌🐠🦆🪶", desc: "붕어마름·다슬기·송사리·왜가리가 사는 곳" },
-  sea: { art: "🥬🪼🐟🐢🐬", desc: "미역·해파리·고등어·바다거북이 사는 곳" },
+const ART: Record<Theme, { art: string[]; desc: string }> = {
+  forest: { art: ["acorn", "squirrel", "bulbul", "snake", "falcon"], desc: "도토리·다람쥐·직박구리·매가 사는 곳" },
+  river: { art: ["hornwort", "melania", "medaka", "duck", "heron"], desc: "붕어마름·다슬기·송사리·왜가리가 사는 곳" },
+  sea: { art: ["wakame", "jellyfish", "mackerel", "turtle", "dolphin"], desc: "미역·해파리·고등어·바다거북이 사는 곳" },
 };
 
 /** 테마가 정해지는 모드는 주소 뒤에 테마를 붙임(#/build/river) */
@@ -45,7 +45,7 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
       <main className="body">
         <div className="hello">
           <div className="badge" aria-hidden="true">
-            🎒
+            <Pic image="img/ui/ui-mascot" />
           </div>
           <div>
             <h1>탐험대원, 오늘은 어디를 탐험해 볼까요?</h1>
@@ -70,11 +70,13 @@ export function MainScreen({ go }: { go: (r: Route) => void }) {
             const cards = THEME_CARDS[t].filter((s) => record.cards.includes(s.id)).length;
             return (
               <button key={t} className={`theme ${t}${theme === t ? " on" : ""}`} aria-pressed={theme === t} disabled={Boolean(lesson) && lesson!.theme !== t} onClick={() => setTheme(t)}>
-                <div className="art" aria-hidden="true">
+                <div className="art" aria-hidden="true" style={{ backgroundImage: `url(img/ui/ui-bg-${t}.webp)` }}>
                   <span className="tag">
                     ⭐ {stars}/{stages.length * 3} · 🃏 {cards}/{THEME_CARDS[t].length}
                   </span>
-                  {ART[t].art}
+                  {ART[t].art.map((k) => (
+                    <Pic key={k} image={`img/${t}/${t}-${k}`} />
+                  ))}
                 </div>
                 <div className="info">
                   <h3>{THEMES[t].name}</h3>

@@ -8,7 +8,7 @@
 .web .node.hot .ring { opacity: 1; animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { r: 40; } 50% { r: 46; } }
 .web .node.gone circle.bg { fill: #efe9dc; stroke-dasharray: 5 5; }
-.web .node.gone text.emo { opacity: 0.35; }
+.web .node.gone image.emo { opacity: 0.35; }
 .web text.badge { font: 700 13px var(--f-body); fill: #fff; }
 
 /* ── 변화 칩: 색 + 기호 + 수 ── */
@@ -37,6 +37,7 @@
 .event-card .pic { font-size: 46px; text-align: center; padding: 6px 0 0; position: relative; line-height: 1.2; }
 .event-card .pic .x { position: absolute; left: calc(50% + 26px); top: 12px; transform: rotate(12deg); font: 900 16px var(--f-body); color: var(--down); border: 3px solid var(--down); border-radius: 8px; padding: 1px 7px; background: rgba(255, 253, 242, 0.9); }
 .event-card .pic .gray { filter: grayscale(1); opacity: 0.55; }
+.event-card .pic img.pic { height: 150px; }
 .event-card h2 { font-size: 24px; text-align: center; padding: 0 12px; }
 .event-card p { padding: 2px 18px 0; margin: 0; text-align: center; color: #4a463d; font-size: 15px; }
 .event-card .meta { display: flex; justify-content: center; gap: 8px; padding: 8px 12px 10px; flex-wrap: wrap; }
@@ -63,6 +64,7 @@
 .reason { display: flex; gap: 10px; align-items: center; text-align: left; border: 2px solid var(--line); background: var(--card); border-radius: var(--r-md); padding: 6px 12px; font-size: 15px; min-height: 44px; }
 .reason .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #b9ae95; flex: none; }
 .reason .mini { font-size: 17px; white-space: nowrap; flex: none; }
+.reason .mini img.pic { height: 30px; }
 .reason[aria-pressed="true"] { border-color: var(--navy); background: var(--navy-2); }
 .reason[aria-pressed="true"] .dot { border: 7px solid var(--navy); }
 .submit-row { display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 4px; }

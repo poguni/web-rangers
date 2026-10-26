@@ -3,7 +3,7 @@ import { josa } from "../utils/korean";
 import type { ActionCard, Theme } from "./types";
 
 export interface Reason {
-  icons: string; // 그림 기호 "🐸✕ → 🦗▲ → 🌿▼"
+  icons: string; // 그림 기호 "[frog]✕ → [grasshopper]▲ → [grass]▼". [ ] 안은 같은 테마 생물(id 뒷부분)이나 비생물 요소(sun·water·soil·air)로, 그림으로 바뀜
   text: string;
   correct?: boolean;
   /** 정답 보기의 영향이 퍼진 길. 엔진이 기록한 원인과 같은지 테스트로 확인 */
@@ -68,14 +68,14 @@ export const forestStages: Stage[] = [
     q1: "forest.grass",
     q2: ["forest.grasshopper", "forest.duck", "forest.snake", "forest.rabbit"],
     q3: [
-      { icons: "🐸✕ → 🌿▲", text: "개구리가 풀을 먹지 않게 되어서 풀이 늘어요." },
+      { icons: "[frog]✕ → [grass]▲", text: "개구리가 풀을 먹지 않게 되어서 풀이 늘어요." },
       {
-        icons: "🐸✕ → 🦗▲ → 🌿▼",
+        icons: "[frog]✕ → [grasshopper]▲ → [grass]▼",
         text: "메뚜기를 먹던 개구리가 없어져 메뚜기가 늘고, 메뚜기가 풀을 많이 먹어요.",
         correct: true,
         path: ["forest.frog", "forest.grasshopper", "forest.grass"],
       },
-      { icons: "🐸 ⋯ 🌿", text: "개구리와 풀은 이어져 있지 않아서 변하지 않아요." },
+      { icons: "[frog] ⋯ [grass]", text: "개구리와 풀은 이어져 있지 않아서 변하지 않아요." },
     ],
     actions: [
       reintroduce(["forest.frog"], "개구리", "다른 숲의 개구리를 옮겨 와 풀어 줘요."),
@@ -93,10 +93,10 @@ export const forestStages: Stage[] = [
     q1: "forest.weasel",
     q2: ["forest.caterpillar", "forest.cornus", "forest.rabbit", "forest.acorn"],
     q3: [
-      { icons: "🐦✕ → 🦦✕", text: "족제비는 먹이가 없어져서 함께 사라져요." },
-      { icons: "🐦✕ → 🦦▲", text: "직박구리가 사라지면 족제비가 크게 늘어요." },
+      { icons: "[bulbul]✕ → [weasel]✕", text: "족제비는 먹이가 없어져서 함께 사라져요." },
+      { icons: "[bulbul]✕ → [weasel]▲", text: "직박구리가 사라지면 족제비가 크게 늘어요." },
       {
-        icons: "🐦✕ → 🦦 ← 🐇🐿️🦆",
+        icons: "[bulbul]✕ → [weasel] ← [rabbit][squirrel][duck]",
         text: "족제비는 직박구리 말고도 토끼·다람쥐·오리를 먹어서 버틸 수 있어요.",
         correct: true,
       },
@@ -117,10 +117,10 @@ export const forestStages: Stage[] = [
     q1: "forest.grass",
     q2: ["forest.clover", "forest.squirrel", "forest.falcon", "forest.weasel"],
     q3: [
-      { icons: "🦗▲ → 🌿▼", text: "풀을 먹는 동물이 늘어서 풀이 줄어요." },
-      { icons: "🍄 ⋯ 🌿", text: "버섯과 곰팡이는 풀과 상관없어서 풀은 그대로예요." },
+      { icons: "[grasshopper]▲ → [grass]▼", text: "풀을 먹는 동물이 늘어서 풀이 줄어요." },
+      { icons: "[mushroom][mold] ⋯ [grass]", text: "버섯과 곰팡이는 풀과 상관없어서 풀은 그대로예요." },
       {
-        icons: "🍄✕ → 🟫▼ → 🌿▼",
+        icons: "[mushroom][mold]✕ → [soil]▼ → [grass]▼",
         text: "죽은 생물이 분해되지 않아 흙의 양분이 줄고, 풀이 잘 자라지 못해요.",
         correct: true,
         path: ["forest.mushroom", "forest.grass"],
@@ -143,13 +143,13 @@ export const forestStages: Stage[] = [
     q2: ["forest.grasshopper", "forest.falcon", "forest.snake", "forest.rabbit"],
     q3: [
       {
-        icons: "☀️ → 🌿▼ → 🦗▼ → 🐸▼",
+        icons: "[sun] → [grass]▼ → [grasshopper]▼ → [frog]▼",
         text: "가뭄으로 풀이 줄자 풀을 먹는 메뚜기가 줄고, 메뚜기를 먹는 개구리도 줄어요.",
         correct: true,
         path: ["forest.grass", "forest.grasshopper", "forest.frog"],
       },
-      { icons: "☀️ → 🌿▼ → 🐸▲", text: "풀이 줄면 개구리가 숨을 곳이 없어 오히려 늘어요." },
-      { icons: "☀️ ⋯ 🐸", text: "개구리는 풀을 먹지 않아서 가뭄과 상관없어요." },
+      { icons: "[sun] → [grass]▼ → [frog]▲", text: "풀이 줄면 개구리가 숨을 곳이 없어 오히려 늘어요." },
+      { icons: "[sun] ⋯ [frog]", text: "개구리는 풀을 먹지 않아서 가뭄과 상관없어요." },
     ],
     actions: [
       water,
@@ -170,11 +170,11 @@ export const forestStages: Stage[] = [
     q3: [
       { icons: "🔗 = 🕸️", text: "먹이사슬과 먹이그물은 결과가 똑같아요." },
       {
-        icons: "🕸️ 🦗 ← 🐦🦆🦦",
+        icons: "🕸️ [grasshopper] ← [bulbul][duck][weasel]",
         text: "먹이그물에는 메뚜기를 먹는 다른 동물도 있어서, 메뚜기가 덜 늘어나요.",
         correct: true,
       },
-      { icons: "🔗 🌿🦗🐸", text: "먹이사슬에는 생물이 적어서 변화도 작아요." },
+      { icons: "🔗 [grass][grasshopper][frog]", text: "먹이사슬에는 생물이 적어서 변화도 작아요." },
     ],
     actions: [],
     wrapUp: "먹이그물이 복잡하면 한 생물이 사라져도 다른 생물이 그 자리를 채워, 생태계가 더 안정적으로 유지돼요.",
@@ -192,14 +192,14 @@ export const riverStages: Stage[] = [
     q1: "river.hornwort",
     q2: ["river.crucian", "river.medaka", "river.daphnia", "river.duck"],
     q3: [
-      { icons: "🪶✕ → 🌱▲", text: "왜가리가 붕어마름을 먹지 않게 되어서 붕어마름이 늘어요." },
+      { icons: "[heron]✕ → [hornwort]▲", text: "왜가리가 붕어마름을 먹지 않게 되어서 붕어마름이 늘어요." },
       {
-        icons: "🪶✕ → 🐟▲ → 🌱▼",
+        icons: "[heron]✕ → [crucian]▲ → [hornwort]▼",
         text: "붕어를 먹던 왜가리가 사라져 붕어가 늘고, 붕어가 붕어마름을 많이 먹어요.",
         correct: true,
         path: ["river.heron", "river.crucian", "river.hornwort"],
       },
-      { icons: "🪶 ⋯ 🌱", text: "왜가리와 붕어마름은 이어져 있지 않아서 변하지 않아요." },
+      { icons: "[heron] ⋯ [hornwort]", text: "왜가리와 붕어마름은 이어져 있지 않아서 변하지 않아요." },
     ],
     actions: [reintroduce(["river.heron"], "왜가리", "다른 강의 왜가리가 찾아오도록 둥지 숲을 지켜요."), protect("river.hornwort", "붕어마름"), clean("river")],
     wrapUp: "먹는 동물이 사라지면 먹히는 생물이 늘고, 그 생물의 먹이는 줄어요. 강에서도 영향은 화살표를 따라 퍼져요.",
@@ -213,10 +213,10 @@ export const riverStages: Stage[] = [
     q1: "river.duck",
     q2: ["river.closterium", "river.medaka", "river.crucian", "river.falcon"],
     q3: [
-      { icons: "💧✕ → 🦆▲", text: "물이 더러워지면 오리가 물속 먹이를 찾기 쉬워져 늘어요." },
-      { icons: "💧 ⋯ 🦆", text: "오리는 물 위에서 살아서 강물이 더러워져도 상관없어요." },
+      { icons: "[water]✕ → [duck]▲", text: "물이 더러워지면 오리가 물속 먹이를 찾기 쉬워져 늘어요." },
+      { icons: "[water] ⋯ [duck]", text: "오리는 물 위에서 살아서 강물이 더러워져도 상관없어요." },
       {
-        icons: "💧✕ → 🐌▼ → 🦆▼",
+        icons: "[water]✕ → [melania]▼ → [duck]▼",
         text: "더러운 물에 다슬기가 줄어, 다슬기를 먹는 오리도 줄어요.",
         correct: true,
         path: ["river.melania", "river.duck"],
@@ -234,14 +234,14 @@ export const riverStages: Stage[] = [
     q1: "river.hornwort",
     q2: ["river.crucian", "river.medaka", "river.heron", "river.daphnia"],
     q3: [
-      { icons: "🐟➕ → 🌱▼", text: "큰입배스가 붕어마름을 먹어서 붕어마름이 줄어요." },
+      { icons: "[bass]➕ → [hornwort]▼", text: "큰입배스가 붕어마름을 먹어서 붕어마름이 줄어요." },
       {
-        icons: "🐟➕ → 🐟▼ → 🌱▲",
+        icons: "[bass]➕ → [crucian]▼ → [hornwort]▲",
         text: "큰입배스가 붕어를 잡아먹어 붕어가 줄고, 붕어가 덜 먹는 붕어마름은 늘어요.",
         correct: true,
         path: ["river.bass", "river.crucian", "river.hornwort"],
       },
-      { icons: "🐟➕ ⋯ 🌱", text: "큰입배스는 물고기만 먹으니 붕어마름은 그대로예요." },
+      { icons: "[bass]➕ ⋯ [hornwort]", text: "큰입배스는 물고기만 먹으니 붕어마름은 그대로예요." },
     ],
     actions: [catchInvasive, protect("river.hornwort", "붕어마름"), clean("river")],
     wrapUp: "외래종은 먹는 동물이 거의 없어 잘 줄지 않아요. 원래 살던 생물이 줄고, 먹이그물 전체가 흔들려요.",
@@ -258,14 +258,14 @@ export const seaStages: Stage[] = [
     q1: "sea.crab",
     q2: ["sea.jellyfish", "sea.mackerel", "sea.gull", "sea.ray"],
     q3: [
-      { icons: "🐢▼ → 🦀▲", text: "바다거북이 게를 먹지 않게 되어서 게가 늘어요." },
+      { icons: "[turtle]▼ → [crab]▲", text: "바다거북이 게를 먹지 않게 되어서 게가 늘어요." },
       {
-        icons: "🐢▼ → 🌿▲ → 🦀▲",
+        icons: "[turtle]▼ → [wakame][hijiki]▲ → [crab]▲",
         text: "바다거북이 줄어 미역·톳을 덜 먹으니, 미역·톳을 먹는 게가 늘어요.",
         correct: true,
         path: ["sea.turtle", "sea.wakame", "sea.crab"],
       },
-      { icons: "🪼▲ → 🦀▼", text: "해파리가 늘어 게를 잡아먹으니 게가 줄어요." },
+      { icons: "[jellyfish]▲ → [crab]▼", text: "해파리가 늘어 게를 잡아먹으니 게가 줄어요." },
     ],
     actions: [clean("sea"), protect("sea.turtle", "바다거북"), protect("sea.crab", "게")],
     wrapUp: "같은 먹이를 먹는 생물끼리도 이어져 있어요. 한쪽이 줄면 남은 먹이를 먹는 다른 생물이 늘어요.",
@@ -279,14 +279,14 @@ export const seaStages: Stage[] = [
     q1: "sea.dolphin",
     q2: ["sea.dolphin", "sea.gull", "sea.jellyfish", "sea.crab"],
     q3: [
-      { icons: "🐟▼ → 🐬▲", text: "고등어가 줄면 돌고래끼리 먹이 다툼이 줄어 돌고래가 늘어요." },
+      { icons: "[mackerel]▼ → [dolphin]▲", text: "고등어가 줄면 돌고래끼리 먹이 다툼이 줄어 돌고래가 늘어요." },
       {
-        icons: "🐟▼ → 🐬▼",
+        icons: "[mackerel]▼ → [dolphin]▼",
         text: "돌고래의 먹이인 고등어가 줄어서 돌고래도 줄어요.",
         correct: true,
         path: ["sea.mackerel", "sea.dolphin"],
       },
-      { icons: "🐟 ⋯ 🐬", text: "돌고래는 물고기를 먹지 않아서 그대로예요." },
+      { icons: "[mackerel] ⋯ [dolphin]", text: "돌고래는 물고기를 먹지 않아서 그대로예요." },
     ],
     actions: [], // 고등어가 저절로 다시 늘어 어떤 행동이든 결과가 같음 → 예측 점수로 별
     wrapUp: "먹이가 줄면 그 먹이를 먹는 동물도 줄어요. 생물을 잡을 때는 다시 늘어날 수 있을 만큼만 잡아야 해요.",
@@ -300,10 +300,10 @@ export const seaStages: Stage[] = [
     q1: "sea.crab",
     q2: ["sea.crab", "sea.turtle", "sea.gull", "sea.mackerel"],
     q3: [
-      { icons: "🌡️ → 🦀▲", text: "게는 따뜻한 물을 좋아해서 늘어요." },
-      { icons: "🌡️ ⋯ 🦀", text: "게는 바닷물 온도와 상관없어서 그대로예요." },
+      { icons: "🌡️ → [crab]▲", text: "게는 따뜻한 물을 좋아해서 늘어요." },
+      { icons: "🌡️ ⋯ [crab]", text: "게는 바닷물 온도와 상관없어서 그대로예요." },
       {
-        icons: "🌡️ → 🌿▼ → 🦀▼",
+        icons: "🌡️ → [wakame][hijiki]▼ → [crab]▼",
         text: "바닷물이 따뜻해져 미역·톳이 줄자, 미역·톳을 먹는 게도 줄어요.",
         correct: true,
         path: ["sea.wakame", "sea.crab"],

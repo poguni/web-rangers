@@ -37,6 +37,21 @@ export function modelFor(theme: Theme, ids?: string[], events: EventCard[] = [])
   return models.get(key)!;
 }
 
+const ABIOTIC = ["sun", "water", "soil", "air"];
+/** 보기 그림 기호("[frog]✕ → [grass]▲")를 글자와 그림으로 나눔. [ ] 안은 테마 생물(id 뒷부분)이나 비생물 요소 */
+export function reasonParts(icons: string, theme: Theme, model: Model): (string | { image: string })[] {
+  return icons
+    .split(/\[(\w+)\]/)
+    .map((s, i) => {
+      if (i % 2 === 0) return s;
+      if (ABIOTIC.includes(s)) return { image: `img/abiotic/abiotic-${s}` };
+      const sp = model.species[model.index[`${theme}.${s}`]];
+      if (!sp) throw new Error(`그림 기호의 생물이 없어요: ${s}`);
+      return { image: sp.image };
+    })
+    .filter((part) => part !== "");
+}
+
 export type Answer = "up" | "down" | "same";
 
 export interface PreparedStage {
