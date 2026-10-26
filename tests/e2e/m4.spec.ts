@@ -6,9 +6,9 @@ const noPageNumbers = async (page: Page) => expect(await page.locator("body").in
 
 async function login(page: Page, g: number, c: number, n: number) {
   await page.goto("/#/");
-  await page.getByRole("button", { name: `${g}학년`, exact: true }).click();
-  await page.getByRole("button", { name: `${c}반`, exact: true }).click();
-  await page.getByRole("button", { name: `${n}번`, exact: true }).click();
+  await page.getByLabel("학년").fill(String(g));
+  await page.getByLabel("반").fill(String(c));
+  await page.getByLabel("번호").fill(String(n));
   await page.getByRole("button", { name: /번으로 시작/ }).click();
 }
 
@@ -16,10 +16,10 @@ async function pin(page: Page, digits: string) {
   for (const d of digits) await page.getByRole("button", { name: d, exact: true }).click();
 }
 
-test("시작: 번호를 고르면 메인에 번호가 보이고, 학생 바꾸기로 돌아와요", async ({ page }) => {
-  await page.goto("/#/stages"); // 번호를 고르기 전에는 어느 주소든 시작 화면
+test("시작: 번호를 쓰면 메인에 번호가 보이고, 학생 바꾸기로 돌아와요", async ({ page }) => {
+  await page.goto("/#/stages"); // 번호를 쓰기 전에는 어느 주소든 시작 화면
   await expect(page.getByText("먹이그물 탐험대에 온 것을 환영해요!")).toBeVisible();
-  await expect(page.getByRole("button", { name: "번호를 모두 골라 주세요" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "번호를 모두 써 주세요" })).toBeDisabled();
   expect(await fits(page)).toBe(true);
   await login(page, 4, 2, 13);
   await expect(page.getByText("4학년 2반 13번")).toBeVisible();
@@ -28,6 +28,32 @@ test("시작: 번호를 고르면 메인에 번호가 보이고, 학생 바꾸�
   await expect(page.getByText("먹이그물 탐험대에 온 것을 환영해요!")).toBeVisible();
   await page.getByRole("button", { name: "손님으로 시작" }).click();
   await expect(page.locator(".appbar .pill")).toHaveText("👤 손님");
+});
+
+test("시작: 키보드로 차례로 쓰면 다음 칸으로 넘어가고, 범위 밖 수는 알려 줘요", async ({ page }) => {
+  await page.goto("/#/");
+  await expect(page.getByLabel("학년")).toBeFocused();
+  await page.keyboard.type("4");
+  await expect(page.getByLabel("반")).toBeFocused();
+  await page.keyboard.type("2"); // 2 뒤에는 더 붙일 수 없으니(20반 없음) 바로 번호 칸으로
+  await expect(page.getByLabel("번호")).toBeFocused();
+  await page.keyboard.type("45");
+  await expect(page.getByRole("status").filter({ hasText: "번호는 1부터 40까지" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "번호를 모두 써 주세요" })).toBeDisabled();
+  await page.getByLabel("번호").fill("13");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("4학년 2반 13번")).toBeVisible();
+});
+
+test("시작: 작은 QR 코드를 누르면 가운데에 크게 나오고, 닫을 수 있어요", async ({ page }) => {
+  await page.goto("/#/");
+  await page.getByRole("button", { name: "접속 QR 코드 크게 보기" }).click();
+  const dialog = page.getByRole("dialog", { name: "접속 QR 코드" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(new URL(page.url()).origin);
+  expect((await dialog.locator("svg").boundingBox())!.width).toBeGreaterThan(250);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
 });
 
 test("사전 진단: 한 화면에 한 문항, 점수는 보여 주지 않고 다시 풀 수 없어요", async ({ page }) => {

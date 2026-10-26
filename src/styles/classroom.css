@@ -2,14 +2,31 @@
 
 .hello .sp { flex: 1; }
 
-/* ── 00 시작: 학년·반·번호 숫자 버튼 ── */
-.numpick { display: flex; flex-direction: column; gap: 12px; }
+/* ── 00 시작: 학년·반·번호 입력란, 접속 QR 코드 ── */
+.screen.start { background-color: var(--paper); background-size: cover; background-position: center; }
+.start .appbar { background: rgba(255, 253, 247, 0.75); }
+/* 배경 그림 위쪽 가운데의 제목 자리를 비워 두려고 카드를 아래쪽에 둠 */
+.start .body { align-items: center; justify-content: center; padding-top: 22vh; position: relative; }
+.start-card { width: min(560px, 100%); display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 28px 32px; text-align: center; background: rgba(255, 253, 247, 0.94); }
+.start-card h1 { font-size: 26px; margin: 0; }
+.start-card .sub { margin: 0; font-size: 15px; }
+.id-row { display: flex; justify-content: center; gap: 18px; margin-top: 8px; }
+.id-field { display: flex; align-items: center; gap: 8px; font-family: var(--f-title); font-size: 22px; color: var(--navy); }
+.id-field input { width: 84px; height: 64px; text-align: center; font: 700 32px var(--f-body); color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 14px; box-shadow: inset 0 2px 0 var(--paper-2); }
+.id-field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px var(--navy-2); }
+.id-field input[aria-invalid="true"] { border-color: var(--down); box-shadow: 0 0 0 4px var(--down-2); }
+.id-hint { min-height: 20px; margin: 0; font-size: 14px; font-weight: 700; color: var(--down); }
+.qr-chip { position: absolute; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); box-shadow: var(--shadow); font-weight: 700; font-size: 14px; text-align: left; color: var(--navy); }
+.qr-chip svg { border-radius: 6px; }
+.qr-overlay { position: fixed; inset: 0; background: rgba(20, 44, 71, 0.55); display: grid; place-items: center; z-index: 50; }
+.qr-dialog { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 32px; }
+.qr-dialog h2 { font-size: 22px; margin: 0; }
+.qr-dialog svg { width: min(520px, 62vh); height: auto; }
+.qr-url { margin: 0; font-size: 16px; font-weight: 700; color: var(--navy); word-break: break-all; }
+
 .np-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: start; }
 .np-label { font-family: var(--f-title); font-weight: 400; font-size: 20px; color: var(--navy); line-height: 48px; }
 .np-btns { display: grid; gap: 6px; }
-.np-btns.g { grid-template-columns: repeat(6, 72px); }
-.np-btns.c { grid-template-columns: repeat(15, minmax(44px, 1fr)); }
-.np-btns.n { grid-template-columns: repeat(20, minmax(44px, 1fr)); }
 .np { min-height: 48px; min-width: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); font-size: 18px; font-weight: 700; box-shadow: 0 3px 0 var(--line); }
 .np:active { transform: translateY(3px); box-shadow: 0 0 0 var(--line); }
 .np[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; box-shadow: 0 3px 0 var(--navy-dark); }
@@ -144,7 +161,5 @@ a.iconbtn { text-decoration: none; }
 .rv.no i { color: #f7a3ae; font-style: normal; font-weight: 900; }
 
 @media (max-width: 1000px) {
-  .np-btns.c { grid-template-columns: repeat(8, 1fr); }
-  .np-btns.n { grid-template-columns: repeat(8, 1fr); }
   .diag-options.n3, .diag-options.n4 { grid-template-columns: repeat(2, 1fr); }
 }
