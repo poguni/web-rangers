@@ -1,5 +1,5 @@
 // DESIGN 7.1 FoodWebCanvas + 7.2 화살표 잇기 입력(끌어서 잇기·눌러서 잇기를 Pointer Events 하나로)
-// onLink가 있으면 잇기 판, onNodeTap만 있으면 생물 고르기 판(자유 실험실), 둘 다 없으면 보기 전용(관찰)
+// onLink가 있으면 잇기 판, onMove가 있으면 카드 옮기기 판, onNodeTap만 있으면 생물 고르기 판(자유 실험실), 모두 없으면 보기 전용(관찰)
 import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type RefObject } from "react";
 import { BOARD, type Point } from "../game/build";
 import { imageUrl } from "../data/images";
@@ -13,6 +13,7 @@ export interface BoardNode {
   x: number;
   y: number;
   state?: "ghost" | "shake" | "gone" | "hot" | "pick";
+  fixed?: boolean; // 옮기기 판에서도 움직이지 않음(분해자 상자 안 카드)
   badge?: { text: string; kind: "up" | "down" | "gone" }; // 오른쪽 위 변화 배지 "▲136"
 }
 
@@ -26,6 +27,8 @@ export interface BoardEdge {
 const R = 32; // 노드 반지름
 const MAGNET = 60; // 끌어서 놓을 때 이 거리 안의 생물에 자석처럼 붙음
 const DRAG_START = 8; // px
+const KEY_STEP = 20; // 옮기기 판에서 화살표 키 한 번에 움직이는 거리
+const ARROW_KEYS: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 const ROLE_COLOR: Record<Role, string> = {
   producer: "var(--producer)",
   consumer: "var(--consumer)",
@@ -47,23 +50,28 @@ interface Props {
   svgRef: RefObject<SVGSVGElement | null>;
   onLink?: (from: string, to: string) => void;
   onNodeTap?: (id: string) => void;
+  /** 카드 옮기기: 끌어서 놓은 자리(판 좌표) */
+  onMove?: (id: string, p: Point) => void;
   /** 빈 곳을 눌렀을 때(카드 놓기) */
   onBoardTap?: (p: Point) => void;
   decomposerBox?: boolean;
 }
 
-export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, onBoardTap, decomposerBox }: Props) {
+export function FoodWebBoard({ nodes: given, edges, label, svgRef, onLink, onNodeTap, onMove, onBoardTap, decomposerBox }: Props) {
   const uid = useId();
   const [pick, setPick] = useState<string | null>(null);
   const [rubber, setRubber] = useState<{ from: string; x: number; y: number } | null>(null);
+  const [moving, setMoving] = useState<{ id: string; x: number; y: number } | null>(null);
   const down = useRef<{ from: string; x: number; y: number; moved: boolean } | null>(null);
   const dropping = useRef(false); // 끌어서 잇기를 끝낸 pointerup 바로 뒤에 오는 click 하나만 무시
+  // 옮기는 중인 카드는 손가락을 따라 그림(화살표도 함께 따라감)
+  const nodes = moving ? given.map((n) => (n.id === moving.id ? { ...n, x: moving.x, y: moving.y } : n)) : given;
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const toBoard = (x: number, y: number) => clientToBoard(svgRef.current!, x, y);
-  const interactive = Boolean(onLink || onNodeTap);
+  const interactive = Boolean(onLink || onNodeTap || onMove);
 
   function tapNode(id: string) {
-    if (dropping.current) return;
+    if (dropping.current || onMove) return;
     if (onNodeTap) return onNodeTap(id);
     if (!onLink) return;
     if (pick === null) setPick(id);
@@ -75,7 +83,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
   }
 
   function onNodePointerDown(id: string, e: PointerEvent) {
-    if (e.button !== 0 || !onLink) return;
+    if (e.button !== 0 || !(onLink || (onMove && !byId.get(id)?.fixed))) return;
     down.current = { from: id, x: e.clientX, y: e.clientY, moved: false };
   }
 
@@ -86,6 +94,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
       // 판 밖에서 손을 떼 pointerup을 못 받은 경우: 끌기 상태를 버림
       down.current = null;
       setRubber(null);
+      setMoving(null);
       return;
     }
     if (!d.moved) {
@@ -94,7 +103,8 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
       e.currentTarget.setPointerCapture(e.pointerId);
       setPick(null);
     }
-    setRubber({ from: d.from, ...toBoard(e.clientX, e.clientY) });
+    if (onMove) setMoving({ id: d.from, ...toBoard(e.clientX, e.clientY) });
+    else setRubber({ from: d.from, ...toBoard(e.clientX, e.clientY) });
   }
 
   function onPointerUp(e: PointerEvent<SVGSVGElement>) {
@@ -105,6 +115,10 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
     dropping.current = true;
     setTimeout(() => (dropping.current = false));
     const p = toBoard(e.clientX, e.clientY);
+    if (onMove) {
+      setMoving(null);
+      return onMove(d.from, p);
+    }
     let best: BoardNode | null = null;
     let bestDist = MAGNET;
     for (const n of nodes) {
@@ -124,7 +138,12 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
   }
 
   const onNodeKey = (id: string) => (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
+    const n = byId.get(id)!;
+    const step = ARROW_KEYS[e.key];
+    if (onMove && step && !n.fixed) {
+      e.preventDefault();
+      onMove(id, { x: n.x + step[0] * KEY_STEP, y: n.y + step[1] * KEY_STEP });
+    } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       tapNode(id);
     }
@@ -138,7 +157,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
   return (
     <svg
       ref={svgRef}
-      className="web"
+      className={`web${onMove ? " move" : ""}`}
       viewBox={`0 0 ${BOARD.width} ${BOARD.height}`}
       role="img"
       aria-label={label}
@@ -147,6 +166,7 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
       onPointerCancel={() => {
         down.current = null;
         setRubber(null);
+        setMoving(null);
       }}
       onClick={onBackgroundClick}
     >
@@ -182,11 +202,11 @@ export function FoodWebBoard({ nodes, edges, label, svgRef, onLink, onNodeTap, o
       {nodes.map((n) => (
         <g
           key={n.id}
-          className="node-pos"
+          className={`node-pos${moving?.id === n.id ? " dragging" : ""}`}
           style={{ transform: `translate(${n.x}px, ${n.y}px)` }}
         >
           <g
-            className={`node${pick === n.id ? " pick" : ""}${n.state ? ` ${n.state}` : ""}${interactive ? "" : " static"}`}
+            className={`node${pick === n.id ? " pick" : ""}${n.state ? ` ${n.state}` : ""}${n.fixed ? " fixed" : ""}${interactive ? "" : " static"}`}
             role={interactive ? "button" : undefined}
             tabIndex={interactive && n.state !== "ghost" ? 0 : undefined}
             aria-label={interactive ? (pick === n.id || n.state === "pick" ? `${n.name} (골랐어요)` : n.name) : undefined}

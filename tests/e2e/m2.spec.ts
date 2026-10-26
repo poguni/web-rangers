@@ -113,4 +113,46 @@ test.describe("먹이그물 만들기", () => {
     const y = (id: string) => page.locator(`[data-node="${id}"]`).evaluate((g) => g.getBoundingClientRect().y);
     expect(await y("forest.grass")).toBeGreaterThan(await y("forest.grasshopper"));
   });
+
+  test("옮기기 모드에서는 끌면 카드가 움직이고 화살표는 생기지 않아요", async ({ page }) => {
+    await page.goto("/#/build");
+    await placeByTap(page, "풀", 0.2, 0.8);
+    await placeByTap(page, "메뚜기", 0.5, 0.8);
+    await page.locator('[data-node="forest.grass"]').click();
+    await page.locator('[data-node="forest.grasshopper"]').click();
+    await expect(page.locator(".progress")).toContainText("1 / 32");
+
+    await page.getByRole("button", { name: "✋ 옮기기" }).click();
+    const center = async (id: string) => {
+      const b = (await page.locator(`[data-node="${id}"] circle.bg`).boundingBox())!;
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    };
+    const before = await center("forest.grasshopper");
+    const grass = await center("forest.grass");
+    const board = (await page.locator("svg.web").boundingBox())!;
+    // 메뚜기를 위로 옮김
+    await page.mouse.move(before.x, before.y);
+    await page.mouse.down();
+    await page.mouse.move(before.x, board.y + board.height * 0.25, { steps: 10 });
+    await page.mouse.up();
+    expect((await center("forest.grasshopper")).y).toBeLessThan(before.y - 100);
+    // 풀을 메뚜기 위로 끌어도 화살표가 생기지 않고, 겹치지 않는 자리로 놓임
+    const after = await center("forest.grasshopper");
+    await page.mouse.move(grass.x, grass.y);
+    await page.mouse.down();
+    await page.mouse.move(after.x, after.y, { steps: 10 });
+    await page.mouse.up();
+    await expect(page.locator(".progress")).toContainText("1 / 32");
+    await expect(page.locator("svg.web .edge.ok")).toHaveCount(1);
+    await page.waitForTimeout(500); // 빈자리로 밀려나는 이동 효과 0.4초
+    const g = await center("forest.grass");
+    expect(Math.hypot(g.x - after.x, g.y - after.y)).toBeGreaterThan(40);
+
+    // 다시 잇기 모드로 돌아오면 끌어서 이을 수 있음
+    await page.getByRole("button", { name: "🏹 잇기" }).click();
+    await placeByTap(page, "개구리", 0.8, 0.5);
+    await page.locator('[data-node="forest.grasshopper"]').click();
+    await page.locator('[data-node="forest.frog"]').click();
+    await expect(page.locator(".progress")).toContainText("2 / 32");
+  });
 });

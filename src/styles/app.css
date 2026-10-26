@@ -119,6 +119,8 @@ img.pic { height: 1.3em; width: auto; vertical-align: middle; object-fit: contai
 .web .node.shake > g { animation: shake 0.4s; }
 @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
 .web .node-pos { transition: transform 0.4s ease; }
+.web .node-pos.dragging { transition: none; }
+.web.move .node:not(.fixed) { cursor: grab; }
 .web .cap { font: 700 13px var(--f-body); fill: var(--decomposer); }
 
 /* ── 03 먹이그물 만들기 ── */
@@ -130,6 +132,8 @@ img.pic { height: 1.3em; width: auto; vertical-align: middle; object-fit: contai
 .mini-card b { display: block; font-size: 15px; }
 .mini-card.sel { transform: rotate(-3deg); border-color: var(--navy); box-shadow: 0 10px 20px rgba(36, 70, 107, 0.25); }
 .toolbar { display: flex; gap: 10px; align-items: center; flex: none; }
+.toolbar .seg { flex: none; }
+.toolbar .seg button { white-space: nowrap; }
 .progress { flex: 1 1 220px; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .meter { height: 14px; border-radius: 99px; background: var(--paper-2); overflow: hidden; flex: 1; }
 .meter i { display: block; height: 100%; background: var(--producer); border-radius: 99px; transition: width 0.3s; }

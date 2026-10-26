@@ -56,6 +56,8 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
   const doneShown = useRef(false);
   // F3-10 먹이사슬 찾기
   const [chainMode, setChainMode] = useState(false);
+  // 판에서 끌기: 화살표 잇기(기본) 또는 카드 옮기기
+  const [moveMode, setMoveMode] = useState(false);
   const [path, setPath] = useState<string[]>([]);
   const [found, setFound] = useState<string[]>([]);
   // 파일럿 지표용 시도 기록(화면을 나갈 때 한 번 저장)
@@ -86,6 +88,22 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
     },
     (id) => setSelected((s) => (s === id ? null : id)),
   );
+
+  function move(id: string, p: Point) {
+    setPlaced((prev) => {
+      const others = Object.entries(prev).flatMap(([k, q]) => (k === id ? [] : [q]));
+      return { ...prev, [id]: findFreeSpot(p, others) };
+    });
+  }
+
+  function changeMode(next: boolean) {
+    setMoveMode(next);
+    setToast(
+      next
+        ? { kind: "info", title: "카드를 끌어서 옮겨요.", text: "이은 화살표는 카드를 따라와요. 다 옮겼으면 🏹 잇기를 눌러요." }
+        : { kind: "info", title: "다시 화살표를 이어요.", text: "먹히는 생물 → 먹는 생물로 끌거나, 차례로 눌러요." },
+    );
+  }
 
   function onBoardTap(p: Point) {
     if (selected) place(selected, p);
@@ -199,6 +217,7 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
       role: s.role,
       ...layout[s.id],
       state: showDecomp ? undefined : ("ghost" as const),
+      fixed: true,
     })),
   ];
   const placedIds = Object.keys(placed);
@@ -240,6 +259,16 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
               {linked.size} / {TOTAL}
             </b>
           </div>
+          {!chainMode && (
+            <div className="seg" role="group" aria-label="판에서 끌면">
+              <button aria-pressed={!moveMode} onClick={() => changeMode(false)}>
+                🏹 잇기
+              </button>
+              <button aria-pressed={moveMode} onClick={() => changeMode(true)}>
+                ✋ 옮기기
+              </button>
+            </div>
+          )}
           <button className="btn ghost sm" onClick={showHint} disabled={linked.size === TOTAL}>
             💡 힌트 (별 −1)
           </button>
@@ -296,6 +325,9 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
               <div>
                 <b>잇기</b> 먹히는 생물 → 먹는 생물로 끌거나, 차례로 누르기
               </div>
+              <div>
+                <b>옮기기</b> ✋ 옮기기를 누른 뒤 판의 카드를 끌기
+              </div>
             </div>
           </aside>
 
@@ -305,7 +337,8 @@ export function BuildScreen({ theme, go }: { theme: Theme; go: (r: Route) => voi
               label={`${name} 먹이그물 만들기 판`}
               nodes={nodes}
               edges={edges}
-              onLink={chainMode ? undefined : onLink}
+              onLink={chainMode || moveMode ? undefined : onLink}
+              onMove={!chainMode && moveMode ? move : undefined}
               onNodeTap={chainMode ? onChainTap : undefined}
               onBoardTap={chainMode ? undefined : onBoardTap}
               decomposerBox
