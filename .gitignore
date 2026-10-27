@@ -48,3 +48,6 @@ desktop.ini
 
 # ── 교과서 PDF ──
 *.pdf
+
+# ── AI 원본 이미지 압축 파일 (용량이 커서 저장소에 올리지 않음) ──
+design/AI-Images.zip
